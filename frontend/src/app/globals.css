@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* Kisan Setu — warm editorial "control room" theme. Light, confident, data-forward.
+   Single committed look (no auto dark) so the stage demo never flips. */
+:root {
+  color-scheme: light;
+  --ground: #f4f1e8;
+  --surface: #ffffff;
+  --surface-2: #efe9db;
+  --ink: #1b231d;
+  --ink-2: #63695f;
+  --ink-3: #8a8f84;
+  --border: #e4dfd1;
+
+  --brand: #1b8a4b;      /* route / safe / go */
+  --brand-deep: #12673a;
+
+  --high: #e4483d;       /* crash fill */
+  --high-text: #b4291c;  /* crash as text (WCAG-safe) */
+  --watch: #e08a17;      /* watch fill */
+  --watch-text: #955907; /* watch as text */
+  --stable: #1b8a4b;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-brand: var(--brand);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+* { border-color: var(--border); }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 450;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.faint { color: var(--ink-3); }
+
+/* surfaces */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(28, 36, 30, 0.04), 0 6px 20px rgba(28, 36, 30, 0.05);
+}
+.panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+/* KPI */
+.kpi-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; letter-spacing: -0.02em; }
+.eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+
+/* badges */
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.badge-dot { width: 7px; height: 7px; border-radius: 999px; }
+.badge-high { background: #fbeae8; color: var(--high-text); }
+.badge-high .badge-dot { background: var(--high); }
+.badge-watch { background: #fbf1e0; color: var(--watch-text); }
+.badge-watch .badge-dot { background: var(--watch); }
+.badge-stable { background: #e6f4ec; color: var(--brand-deep); }
+.badge-stable .badge-dot { background: var(--stable); }
+
+/* buttons */
+.btn {
+  font-weight: 600; font-size: 14px; padding: 10px 18px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  cursor: pointer; transition: transform .08s ease, box-shadow .15s ease, background .15s ease;
+}
+.btn:hover { box-shadow: 0 4px 14px rgba(28,36,30,.08); }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--brand); border-color: var(--brand-deep); color: #fff; }
+.btn-primary:hover { background: var(--brand-deep); }
+.btn:disabled { opacity: .5; cursor: default; }
+
+.pill { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+  padding:4px 11px; border-radius:999px; background: var(--surface-2); color: var(--ink-2); border:1px solid var(--border); }
+
+.link { color: var(--brand-deep); text-decoration: none; font-weight: 600; }
+.link:hover { text-decoration: underline; }
+
+a { color: inherit; }
