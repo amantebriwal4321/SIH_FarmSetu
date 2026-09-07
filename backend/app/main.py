@@ -1,4 +1,8 @@
 """FastAPI entrypoint. Creates tables, seeds deterministic demo data, mounts /api/v1."""
+from dotenv import load_dotenv
+
+load_dotenv()  # read backend/.env (Twilio keys etc.) before anything else
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 

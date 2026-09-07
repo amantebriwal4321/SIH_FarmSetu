@@ -8,6 +8,7 @@ from app.db import get_db
 from app.models import District, Crop, PriceDaily, RiskScore, Unit, Buyer, Feedback
 from app.predictor import risk_label
 from app import matching
+from app import notify
 
 router = APIRouter()
 
@@ -168,11 +169,7 @@ def crop_matches(slug: str, db: Session = Depends(get_db)):
     return {"matches": matches, "totals": totals}
 
 
-@router.get("/crops/{slug}/alert")
-def crop_alert(slug: str, db: Session = Depends(get_db)):
-    crop = db.query(Crop).filter(Crop.slug == slug).first()
-    if not crop:
-        raise HTTPException(status_code=404, detail="crop not found")
+def _alert_text(db, crop):
     matches, totals = _matches_for(db, crop)
     best = matches[0] if matches else None
     offer = totals.get("offer_price", 0)
@@ -183,14 +180,54 @@ def crop_alert(slug: str, db: Session = Depends(get_db)):
         en = (f"{crop.name} prices are crashing (now Rs{totals['crash_price']}/kg). "
               f"Do not dump your crop. {best['unit_name']}, {near_en}, "
               f"will buy it at Rs{offer}/kg. Press 1 to book.")
-        hi = (f"{crop.name} के दाम गिर रहे हैं (अभी Rs{totals['crash_price']}/किलो)। "
-              f"फसल मत फेंकिए। {best['unit_name']}, {near_hi}, "
-              f"Rs{offer}/किलो में खरीदेगा। बुक करने के लिए 1 दबाएँ।")
+        hi = (f"{crop.name} ke daam gir rahe hain. Fasal mat phenkiye. {best['unit_name']}, "
+              f"{near_hi}, Rs{offer} kilo mein kharidega. Book karne ke liye 1 dabaiye.")
+        hi_text = (f"{crop.name} के दाम गिर रहे हैं (अभी Rs{totals['crash_price']}/किलो)। "
+                   f"फसल मत फेंकिए। {best['unit_name']}, {near_hi}, "
+                   f"Rs{offer}/किलो में खरीदेगा। बुक करने के लिए 1 दबाएँ।")
     else:
         en = f"Alert: {crop.name} prices are crashing. No processing unit is free nearby yet."
-        hi = f"सूचना: {crop.name} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।"
+        hi = f"{crop.name} ke daam gir rahe hain. Abhi paas mein koi unit khaali nahi hai."
+        hi_text = f"सूचना: {crop.name} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।"
+    # `hi` is romanised for the voice engine (clearer TTS); `hi_text` is Devanagari for display.
+    return en, hi, hi_text
+
+
+@router.get("/crops/{slug}/alert")
+def crop_alert(slug: str, db: Session = Depends(get_db)):
+    crop = db.query(Crop).filter(Crop.slug == slug).first()
+    if not crop:
+        raise HTTPException(status_code=404, detail="crop not found")
+    en, _hi_voice, hi_text = _alert_text(db, crop)
     return {"crop": crop.name, "channel": "SMS + voice (simulated)",
-            "english": en, "hindi": hi}
+            "english": en, "hindi": hi_text}
+
+
+@router.get("/notify/status")
+def notify_status():
+    return {"live": notify.is_live()}
+
+
+@router.post("/notify")
+async def notify_send(payload: dict, db: Session = Depends(get_db)):
+    slug = payload.get("crop_slug", "")
+    numbers = payload.get("numbers", [])
+    channel = payload.get("channel", "call")
+    if channel not in ("call", "sms", "whatsapp"):
+        raise HTTPException(status_code=400, detail="channel must be call|sms|whatsapp")
+    if not isinstance(numbers, list) or not numbers:
+        raise HTTPException(status_code=400, detail="numbers must be a non-empty list")
+    crop = db.query(Crop).filter(Crop.slug == slug).first()
+    if not crop:
+        raise HTTPException(status_code=404, detail="crop not found")
+
+    en, hi_voice, _hi_text = _alert_text(db, crop)
+    results = []
+    for raw in numbers[:20]:  # cap per request
+        if not str(raw).strip():
+            continue
+        results.append(await notify.send(str(raw), channel, en, hi_voice))
+    return {"live": notify.is_live(), "channel": channel, "results": results}
 
 
 @router.post("/feedback")
