@@ -51,6 +51,23 @@ App at http://localhost:3000 (it proxies `/api/v1/*` to the backend, no CORS).
 
 To reseed, delete `backend/kisan.db` and restart the backend.
 
+### Send REAL alerts (optional — Twilio)
+
+The crop page has a **"Send this alert to real phones"** box (voice call / SMS / WhatsApp).
+Without keys it runs in **simulated** mode (shows what would be sent, sends nothing).
+To make it live:
+
+1. Sign up at https://twilio.com and, from the console, note your **Account SID** and
+   **Auth Token**, and buy a phone number with Voice enabled.
+2. `cp backend/.env.example backend/.env` and fill in `TWILIO_ACCOUNT_SID`,
+   `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`.
+3. Restart the backend. The badge flips to **Live**.
+
+Notes: a **voice call** to an Indian number needs no extra registration (best for the
+demo). Trial Twilio accounts can only reach numbers you've **verified** in the console —
+verify the judge's/your number first, or upgrade with a few dollars of credit. Plain SMS
+to Indian numbers needs DLT registration; WhatsApp needs recipients to join your sandbox.
+
 ## Architecture
 
 ```
@@ -68,5 +85,6 @@ seed / Agmarknet ─► predictor (risk 0-100) ─► matching engine ─► das
 
 - Live Agmarknet + sowing feeds (seed replaces them for now)
 - Prevention layer (warn before planting)
-- Real SMS/voice gateway (alerts are simulated, shown on screen)
 - Multi-district, multi-crop scale-out
+
+Real voice/SMS/WhatsApp alerts ARE wired (Twilio) — add keys to enable, see above.
