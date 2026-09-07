@@ -177,14 +177,15 @@ def crop_alert(slug: str, db: Session = Depends(get_db)):
     best = matches[0] if matches else None
     offer = totals.get("offer_price", 0)
     if best:
-        en = (f"Alert: {crop.name} prices in {crop.district.name} are crashing "
-              f"(now Rs{totals['crash_price']}/kg). Do not dump your crop. "
-              f"{best['unit_name']} ({best['distance_km']} km) will buy it at Rs{offer}/kg. "
-              f"Reply YES to book.")
-        hi = (f"सूचना: {crop.district.name} में {crop.name} के दाम गिर रहे हैं "
-              f"(अभी Rs{totals['crash_price']}/किलो)। फसल फेंके नहीं। "
-              f"{best['unit_name']} ({best['distance_km']} किमी) Rs{offer}/किलो पर खरीदेगा। "
-              f"बुक करने के लिए YES भेजें।")
+        d = best["distance_km"]
+        near_en = "in your area" if d < 1 else f"{round(d)} km away"
+        near_hi = "आपके पास" if d < 1 else f"{round(d)} किमी दूर"
+        en = (f"{crop.name} prices are crashing (now Rs{totals['crash_price']}/kg). "
+              f"Do not dump your crop. {best['unit_name']}, {near_en}, "
+              f"will buy it at Rs{offer}/kg. Press 1 to book.")
+        hi = (f"{crop.name} के दाम गिर रहे हैं (अभी Rs{totals['crash_price']}/किलो)। "
+              f"फसल मत फेंकिए। {best['unit_name']}, {near_hi}, "
+              f"Rs{offer}/किलो में खरीदेगा। बुक करने के लिए 1 दबाएँ।")
     else:
         en = f"Alert: {crop.name} prices are crashing. No processing unit is free nearby yet."
         hi = f"सूचना: {crop.name} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।"
