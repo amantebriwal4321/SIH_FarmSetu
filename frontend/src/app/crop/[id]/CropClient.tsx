@@ -9,6 +9,7 @@ import SvgMap from "@/components/SvgMap";
 import RiskBadge from "@/components/RiskBadge";
 import ImpactMeter from "@/components/ImpactMeter";
 import PhoneView from "@/components/PhoneView";
+import NotifySection from "@/components/NotifySection";
 import Feedback from "@/components/Feedback";
 import { inr, num, type CropDetail, type Match, type MatchTotals, type AlertText, type Unit } from "@/lib/api";
 
@@ -128,7 +129,10 @@ export default function CropClient({
         {/* farmer phone + feedback */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div className="card p-5">{alert && <PhoneView alert={alert} />}</div>
-          <div className="card p-5"><Feedback cropSlug={detail.slug} /></div>
+          <div className="flex flex-col gap-6">
+            <div className="card p-5"><NotifySection cropSlug={detail.slug} /></div>
+            <div className="card p-5"><Feedback cropSlug={detail.slug} /></div>
+          </div>
         </section>
       </main>
     </>

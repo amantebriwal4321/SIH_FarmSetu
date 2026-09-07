@@ -111,6 +111,36 @@ export const fetchMatches = (slug: string) =>
 export const fetchAlert = (slug: string) => get<AlertText>(`/crops/${slug}/alert`);
 export const fetchTrust = () => get<Trust>("/trust");
 
+export interface NotifyResult {
+  to: string;
+  channel: string;
+  status: string; // sent | simulated | error
+  simulated?: boolean;
+  error?: string;
+  sid?: string;
+}
+
+export const fetchNotifyStatus = () => get<{ live: boolean }>("/notify/status");
+
+export async function sendNotify(body: {
+  crop_slug: string;
+  numbers: string[];
+  channel: "call" | "sms" | "whatsapp";
+}): Promise<{ live: boolean; channel: string; results: NotifyResult[] }> {
+  const res = await fetch(`${API_BASE}/api/v1/notify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    let detail = "send failed";
+    try { detail = (await res.json()).detail || detail; } catch {}
+    throw new Error(detail);
+  }
+  return res.json();
+}
+
 export async function postFeedback(body: {
   crop_slug?: string;
   role?: string;
