@@ -7,6 +7,8 @@ export type SeriesRow = { date: string; month: number; price: number; arrivals: 
 export type Crop = {
   slug: string;
   name: string;
+  nameHi: string;
+  nameKn: string;
   unit: string;
   harvestMonths: number[];
   series: SeriesRow[];
@@ -57,10 +59,10 @@ function genSeries(p: SeriesParams): SeriesRow[] {
   return rows;
 }
 
-const CROP_DEFS: { slug: string; name: string; params: SeriesParams }[] = [
-  { slug: "tomato", name: "Tomato", params: { pStart: 18, pEnd: 4, pSlideStart: 30, pSlideLen: 28, aBase: 200, aPeakExtra: 720, aRampStart: 28, aRampLen: 24 } },
-  { slug: "onion", name: "Onion", params: { pStart: 22, pEnd: 13, pSlideStart: 30, pSlideLen: 24, aBase: 150, aPeakExtra: 240, aRampStart: 32, aRampLen: 20 } },
-  { slug: "beans", name: "Beans", params: { pStart: 40, pEnd: 36, pSlideStart: 35, pSlideLen: 20, aBase: 60, aPeakExtra: 45, aRampStart: 40, aRampLen: 18 } },
+const CROP_DEFS: { slug: string; name: string; nameHi: string; nameKn: string; params: SeriesParams }[] = [
+  { slug: "tomato", name: "Tomato", nameHi: "टमाटर", nameKn: "ಟೊಮೇಟೊ", params: { pStart: 18, pEnd: 4, pSlideStart: 30, pSlideLen: 28, aBase: 200, aPeakExtra: 720, aRampStart: 28, aRampLen: 24 } },
+  { slug: "onion", name: "Onion", nameHi: "प्याज़", nameKn: "ಈರುಳ್ಳಿ", params: { pStart: 22, pEnd: 13, pSlideStart: 30, pSlideLen: 24, aBase: 150, aPeakExtra: 240, aRampStart: 32, aRampLen: 20 } },
+  { slug: "beans", name: "Beans", nameHi: "बीन्स", nameKn: "ಬೀನ್ಸ್", params: { pStart: 40, pEnd: 36, pSlideStart: 35, pSlideLen: 20, aBase: 60, aPeakExtra: 45, aRampStart: 40, aRampLen: 18 } },
 ];
 
 export const DISTRICT: District = {
@@ -70,7 +72,7 @@ export const DISTRICT: District = {
 export const CROPS: Crop[] = CROP_DEFS.map((d) => {
   const series = genSeries(d.params);
   const harvestMonths = Array.from(new Set(series.slice(-20).map((r) => r.month))).sort((a, b) => a - b);
-  return { slug: d.slug, name: d.name, unit: "kg", harvestMonths, series };
+  return { slug: d.slug, name: d.name, nameHi: d.nameHi, nameKn: d.nameKn, unit: "kg", harvestMonths, series };
 });
 
 export const UNITS: Unit[] = [

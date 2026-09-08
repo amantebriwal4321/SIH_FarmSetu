@@ -4,6 +4,7 @@
 import { CROPS, UNITS, BUYERS, DISTRICT, type Crop } from "./seed";
 import { computeRiskSeries, riskLabel, type RiskLabel, type RiskPoint } from "./predictor";
 import { match, type Match, type MatchTotals } from "./matching";
+import type { Lang } from "../i18n";
 
 const SEASON_BASELINE_DAYS = 14;
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
@@ -117,26 +118,46 @@ export function getOverview() {
   };
 }
 
-export function alertText(slug: string): { crop: string; english: string; hindi: string } | null {
+export type AlertBundle = {
+  cropNames: Record<Lang, string>;
+  unitName: string;
+  offer: number;
+  crash: number;
+  texts: Record<Lang, string>;
+};
+
+export function alertText(slug: string): AlertBundle | null {
   const c = CROPS.find((x) => x.slug === slug);
   if (!c) return null;
   const res = getMatches(slug)!;
   const best = res.matches[0];
   const offer = res.totals.offerPrice;
   const crash = res.totals.crashPrice;
+  const cropNames: Record<Lang, string> = { en: c.name, hi: c.nameHi, kn: c.nameKn };
+
   if (!best) {
     return {
-      crop: c.name,
-      english: `${c.name} prices are crashing. No processing unit is free nearby yet.`,
-      hindi: `${c.name} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।`,
+      cropNames, unitName: "", offer, crash,
+      texts: {
+        en: `${c.name} prices are crashing. No processing unit is free nearby yet.`,
+        hi: `${c.nameHi} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।`,
+        kn: `${c.nameKn} ಬೆಲೆ ಕುಸಿಯುತ್ತಿದೆ. ಸಮೀಪದಲ್ಲಿ ಯಾವ ಘಟಕವೂ ಖಾಲಿ ಇಲ್ಲ.`,
+      },
     };
   }
-  const nearEn = best.distanceKm < 1 ? "in your area" : `${Math.round(best.distanceKm)} km away`;
-  const nearHi = best.distanceKm < 1 ? "आपके पास" : `${Math.round(best.distanceKm)} किमी दूर`;
+
+  const km = Math.round(best.distanceKm);
+  const nearEn = best.distanceKm < 1 ? "in your area" : `${km} km away`;
+  const nearHi = best.distanceKm < 1 ? "आपके पास" : `${km} किमी दूर`;
+  const nearKn = best.distanceKm < 1 ? "ನಿಮ್ಮ ಹತ್ತಿರ" : `${km} ಕಿಮೀ ದೂರ`;
+
   return {
-    crop: c.name,
-    english: `${c.name} prices are crashing (now ₹${crash}/kg). Do not dump your crop. ${best.unitName}, ${nearEn}, will buy it at ₹${offer}/kg.`,
-    hindi: `${c.name} के दाम गिर रहे हैं (अभी ₹${crash}/किलो)। फसल मत फेंकिए। ${best.unitName}, ${nearHi}, ₹${offer}/किलो में खरीदेगा।`,
+    cropNames, unitName: best.unitName, offer, crash,
+    texts: {
+      en: `${c.name} prices are crashing (now ₹${crash}/kg). Do not dump your crop. ${best.unitName}, ${nearEn}, will buy it at ₹${offer}/kg.`,
+      hi: `${c.nameHi} के दाम गिर रहे हैं (अभी ₹${crash}/किलो)। फसल मत फेंकिए। ${best.unitName}, ${nearHi}, ₹${offer}/किलो में खरीदेगा।`,
+      kn: `${c.nameKn} ಬೆಲೆ ಕುಸಿಯುತ್ತಿದೆ (ಈಗ ₹${crash}/ಕೆಜಿ). ಬೆಳೆ ಎಸೆಯಬೇಡಿ. ${best.unitName}, ${nearKn}, ₹${offer}/ಕೆಜಿಗೆ ಖರೀದಿಸುತ್ತದೆ.`,
+    },
   };
 }
 

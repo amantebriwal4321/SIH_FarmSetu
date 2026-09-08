@@ -30,6 +30,7 @@
   --font-display: var(--font-display), "Space Grotesk", system-ui, sans-serif;
   --font-body: var(--font-body), "IBM Plex Sans", system-ui, sans-serif;
   --font-deva: var(--font-deva), "IBM Plex Sans Devanagari", system-ui, sans-serif;
+  --font-kn: var(--font-kn), "Noto Sans Kannada", system-ui, sans-serif;
   --font-mono: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
 }
 
@@ -47,6 +48,7 @@ body {
 h1, h2, h3, .display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .deva { font-family: var(--font-deva); }
+.kn { font-family: var(--font-kn); }
 .muted { color: var(--ink-2); }
 .faint { color: var(--ink-3); }
 .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }

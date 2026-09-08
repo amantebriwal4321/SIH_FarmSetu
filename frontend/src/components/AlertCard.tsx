@@ -1,37 +1,37 @@
 "use client";
 
 import { speak, stopSpeak, canSpeak } from "@/lib/speak";
+import { STR, voiceCode, type Lang } from "@/lib/i18n";
+import type { AlertBundle } from "@/lib/engine";
 
-export type AlertContent = {
-  cropName: string;
-  english: string;
-  hindi: string;
-  unitName: string;
-  offer: number;
-  crash: number;
-};
+function scriptClass(lang: Lang) {
+  return lang === "hi" ? "deva" : lang === "kn" ? "kn" : "";
+}
 
 export default function AlertCard({
   a,
+  lang,
   status,
   onAccept,
   onDecline,
 }: {
-  a: AlertContent;
+  a: AlertBundle;
+  lang: Lang;
   status: "pending" | "accepted" | "declined";
   onAccept?: () => void;
   onDecline?: () => void;
 }) {
+  const t = STR[lang];
+  const sc = scriptClass(lang);
+  const crop = a.cropNames[lang];
+
   if (status === "accepted") {
     return (
       <Screen tone="ok">
         <div style={{ fontSize: 40 }}>✓</div>
-        <div className="display" style={{ fontSize: 20, fontWeight: 700, marginTop: 6 }}>Booked</div>
-        <p style={{ fontSize: 14, marginTop: 8, opacity: 0.92 }}>
-          Bring your {a.cropName.toLowerCase()} to <b>{a.unitName}</b>. You’ll get <b>₹{a.offer}/kg</b>.
-        </p>
-        <p className="deva" style={{ fontSize: 13, marginTop: 10, opacity: 0.85 }}>
-          बुकिंग हो गई। अपनी फसल {a.unitName} ले जाइए। ₹{a.offer}/किलो मिलेगा।
+        <div className={`display ${sc}`} style={{ fontSize: 20, fontWeight: 700, marginTop: 6 }}>{t.booked}</div>
+        <p className={sc} style={{ fontSize: 13.5, marginTop: 10, opacity: 0.9, lineHeight: 1.55 }}>
+          {t.bring(crop, a.unitName, a.offer)}
         </p>
       </Screen>
     );
@@ -40,43 +40,42 @@ export default function AlertCard({
     return (
       <Screen tone="muted">
         <div style={{ fontSize: 34 }}>—</div>
-        <div className="display" style={{ fontSize: 18, fontWeight: 700, marginTop: 6 }}>Okay, not now</div>
-        <p style={{ fontSize: 13, marginTop: 8, opacity: 0.8 }}>We’ll alert you if a better price comes up.</p>
+        <div className={`display ${sc}`} style={{ fontSize: 18, fontWeight: 700, marginTop: 6 }}>{t.okNotNow}</div>
       </Screen>
     );
   }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ background: "#0f3d24", color: "#eafaf0", padding: "22px 16px 14px" }}>
-        <div style={{ fontSize: 11, letterSpacing: "0.1em", opacity: 0.7 }}>KRISHI SAATHI · PRICE ALERT</div>
-        <div className="display" style={{ fontSize: 22, fontWeight: 700, marginTop: 8 }}>
-          {a.cropName} price crashing
+        <div className={sc} style={{ fontSize: 11, letterSpacing: "0.08em", opacity: 0.7 }}>{t.saathi} · {t.alertTag}</div>
+        <div className={`display ${sc}`} style={{ fontSize: 21, fontWeight: 700, marginTop: 8, lineHeight: 1.2 }}>
+          {t.header(crop)}
         </div>
-        <div style={{ fontSize: 13, opacity: 0.85, marginTop: 2 }}>Mandi is paying only ₹{a.crash}/kg today</div>
+        <div className={sc} style={{ fontSize: 13, opacity: 0.85, marginTop: 4 }}>{t.mandi(a.crash)}</div>
       </div>
 
       <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
         <div className="panel" style={{ padding: 12 }}>
-          <div className="faint" style={{ fontSize: 11 }}>Don’t dump it — sell here instead</div>
+          <div className={`faint ${sc}`} style={{ fontSize: 11 }}>{t.sellHere}</div>
           <div style={{ fontWeight: 600, marginTop: 3 }}>{a.unitName}</div>
           <div className="kpi-num" style={{ fontSize: 26, color: "var(--brand-deep)", marginTop: 2 }}>₹{a.offer}/kg</div>
         </div>
-        <p className="deva" style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--ink-2)" }}>{a.hindi}</p>
 
         {canSpeak() && (
           <button className="btn btn-ghost" style={{ alignSelf: "flex-start", padding: "8px 14px", fontSize: 13 }}
-            onClick={() => speak(a.hindi, "hi-IN")}>
-            🔊 Play message
+            onClick={() => speak(a.texts[lang], voiceCode[lang])}>
+            {t.play}
           </button>
         )}
 
         <div style={{ flex: 1 }} />
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn" style={{ flex: 1 }} onClick={() => { stopSpeak(); onDecline?.(); }}>
-            Not now
+          <button className={`btn ${sc}`} style={{ flex: 1 }} onClick={() => { stopSpeak(); onDecline?.(); }}>
+            {t.notNow}
           </button>
-          <button className="btn btn-primary" style={{ flex: 1.4 }} onClick={() => { stopSpeak(); onAccept?.(); }}>
-            Accept · हाँ
+          <button className={`btn btn-primary ${sc}`} style={{ flex: 1.4 }} onClick={() => { stopSpeak(); onAccept?.(); }}>
+            {t.accept}
           </button>
         </div>
       </div>

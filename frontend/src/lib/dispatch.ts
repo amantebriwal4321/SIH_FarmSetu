@@ -4,23 +4,24 @@
 // makes "officer sends → farmer receives → farmer accepts → officer sees confirmed"
 // work live on stage without Twilio or a server.
 
+import type { Lang } from "./i18n";
+
 export type Dispatch = {
   id: string;
   cropSlug: string;
-  cropName: string;
+  cropNames: Record<Lang, string>;
   unitName: string;
   offer: number;
   crash: number;
   farmers: number;
-  english: string;
-  hindi: string;
+  texts: Record<Lang, string>;
   ts: number;
   status: "pending" | "accepted" | "declined";
 };
 
-const CHANNEL = "kisan-setu";
-const LS_DISPATCH = "ks_dispatch";
-const LS_CONFIRM = "ks_confirm";
+const CHANNEL = "kisan-setu-v2";
+const LS_DISPATCH = "ks_dispatch_v2";
+const LS_CONFIRM = "ks_confirm_v2";
 
 function chan(): BroadcastChannel | null {
   if (typeof window === "undefined" || typeof BroadcastChannel === "undefined") return null;
@@ -39,7 +40,11 @@ export function sendDispatch(d: Dispatch) {
 export function readLatestDispatch(): Dispatch | null {
   try {
     const raw = localStorage.getItem(LS_DISPATCH);
-    return raw ? (JSON.parse(raw) as Dispatch) : null;
+    if (!raw) return null;
+    const d = JSON.parse(raw) as Dispatch;
+    // guard against any stale/older-shaped payload
+    if (!d || !d.texts || !d.cropNames) return null;
+    return d;
   } catch {
     return null;
   }
