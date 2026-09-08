@@ -9,9 +9,9 @@ import SvgMap from "@/components/SvgMap";
 import ImpactMeter from "@/components/ImpactMeter";
 import Toast from "@/components/Toast";
 import { sendDispatch, onConfirm } from "@/lib/dispatch";
-import { inr, num, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit } from "@/lib/engine";
+import { inr, num, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit, type AlertBundle } from "@/lib/engine";
 
-type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: { crop: string; english: string; hindi: string } };
+type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle };
 type Overview = {
   district: string; cropsTracked: number; cropsAtRisk: number; kgAtRisk: number;
   potentialRupeesSaved: number; unitsAvailable: number; buyers: number; farmersReached: number;
@@ -47,13 +47,12 @@ export default function AdminConsole({
       sendDispatch({
         id: `${selected}-${Date.now()}`,
         cropSlug: selected,
-        cropName: d.detail.name,
+        cropNames: d.alert.cropNames,
         unitName: best.unitName,
         offer: best.offerPrice,
         crash: d.totals.crashPrice,
         farmers,
-        english: d.alert.english,
-        hindi: d.alert.hindi,
+        texts: d.alert.texts,
         ts: Date.now(),
         status: "pending",
       });
