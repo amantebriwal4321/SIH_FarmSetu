@@ -13,8 +13,7 @@ function useCountUp(target: number, active: boolean, ms = 1100) {
     const start = performance.now();
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / ms);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setVal(target * eased);
+      setVal(target * (1 - Math.pow(1 - t, 3)));
       if (t < 1) raf.current = requestAnimationFrame(tick);
     };
     raf.current = requestAnimationFrame(tick);
@@ -39,13 +38,11 @@ export default function ImpactMeter({
   const r = useCountUp(rupees, active);
   const k = useCountUp(kg, active);
   const u = useCountUp(units, active);
-
   const items = [
     { label: "Rupees saved vs dumping", value: "₹" + Math.round(r).toLocaleString("en-IN"), accent: "var(--brand-deep)" },
     { label: "Kg rescued from waste", value: Math.round(k).toLocaleString("en-IN"), accent: "var(--ink)" },
     { label: "Processing units engaged", value: String(Math.round(u)), accent: "var(--ink)" },
   ];
-
   return (
     <div className="grid grid-cols-3 gap-3">
       {items.map((it) => (

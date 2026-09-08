@@ -1,29 +1,19 @@
 "use client";
 
 import {
-  ComposedChart,
-  Area,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
+  ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import type { SeriesPoint } from "@/lib/api";
+import type { SeriesPoint } from "@/lib/engine";
 
 function fmtDate(d: string) {
-  const dt = new Date(d);
-  return dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-export default function PriceChart({ series }: { series: SeriesPoint[] }) {
+export default function PriceChart({ series, height = 320 }: { series: SeriesPoint[]; height?: number }) {
   const data = series.map((p) => ({ ...p, label: fmtDate(p.date) }));
   const tick = { fontSize: 11, fill: "var(--ink-2)" };
-
   return (
-    <ResponsiveContainer width="100%" height={320}>
+    <ResponsiveContainer width="100%" height={height}>
       <ComposedChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
         <CartesianGrid stroke="var(--border)" vertical={false} />
         <XAxis dataKey="label" tick={tick} interval={9} tickLine={false} axisLine={{ stroke: "var(--border)" }} minTickGap={20} />
@@ -34,16 +24,19 @@ export default function PriceChart({ series }: { series: SeriesPoint[] }) {
         <Tooltip
           contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }}
           labelStyle={{ color: "var(--ink-2)", fontWeight: 600 }}
-          formatter={(v: number, name: string) => {
-            if (name === "Price") return [`₹${v}/kg`, name];
-            if (name === "Arrivals") return [`${Math.round(v)} t`, name];
-            return [`${v}`, name];
+          formatter={(value, name) => {
+            const raw = Array.isArray(value) ? value[0] : value;
+            const v = Number(raw);
+            const n = String(name);
+            if (n === "Price") return [`₹${v}/kg`, n];
+            if (n === "Arrivals") return [`${Math.round(v)} t`, n];
+            return [`${v}`, n];
           }}
         />
         <Legend wrapperStyle={{ fontSize: 12 }} iconType="plainline" />
-        <Area yAxisId="arr" dataKey="arrivals" name="Arrivals" fill="var(--brand)" fillOpacity={0.1} stroke="var(--brand)" strokeOpacity={0.35} strokeWidth={1} />
+        <Area yAxisId="arr" dataKey="arrivals" name="Arrivals" fill="var(--brand)" fillOpacity={0.12} stroke="var(--brand)" strokeOpacity={0.35} strokeWidth={1} />
         <Line yAxisId="price" dataKey="price" name="Price" stroke="var(--ink)" strokeWidth={2.4} dot={false} />
-        <Line yAxisId="risk" dataKey="risk" name="Crash risk" stroke="var(--high)" strokeWidth={2.2} strokeDasharray="4 3" dot={false} />
+        <Line yAxisId="risk" dataKey="risk" name="Crash risk" stroke="var(--alarm)" strokeWidth={2.2} strokeDasharray="4 3" dot={false} />
       </ComposedChart>
     </ResponsiveContainer>
   );

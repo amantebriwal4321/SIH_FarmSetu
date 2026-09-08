@@ -1,7 +1,7 @@
 const ROWS = [
-  { key: "arrivals", label: "Arrivals surge", weight: "45%", hint: "vs early-season baseline" },
-  { key: "price", label: "Price slide", weight: "40%", hint: "7-day fall" },
-  { key: "season", label: "Harvest season", weight: "15%", hint: "known glut month" },
+  { key: "arrivals", label: "Arrivals surge", weight: "45%", hint: "vs a normal season" },
+  { key: "price", label: "Price slide", weight: "40%", hint: "last 7 days" },
+  { key: "season", label: "Harvest season", weight: "15%", hint: "glut month" },
 ] as const;
 
 export default function RiskSignals({
@@ -22,7 +22,7 @@ export default function RiskSignals({
               <span className="mono" style={{ fontSize: 12, color: "var(--ink-2)" }}>{Math.round(v)}</span>
             </div>
             <div style={{ height: 8, borderRadius: 999, background: "var(--surface-2)", overflow: "hidden" }}>
-              <div style={{ width: `${v}%`, height: "100%", background: "var(--high)", borderRadius: 999 }} />
+              <div style={{ width: `${v}%`, height: "100%", background: "var(--alarm)", borderRadius: 999 }} />
             </div>
             <div className="faint" style={{ fontSize: 11, marginTop: 3 }}>{r.hint}</div>
           </div>
