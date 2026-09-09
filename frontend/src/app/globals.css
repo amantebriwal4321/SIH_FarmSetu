@@ -27,6 +27,10 @@
   --turmeric: #f4c430;
   --turmeric-deep: #a97e00;
 
+  /* SaaS-dashboard surface (officer console) */
+  --dash-bg: #f4f7f4;
+  --dash-line: #e9ede9;
+
   --font-display: var(--font-display), "Space Grotesk", system-ui, sans-serif;
   --font-body: var(--font-body), "IBM Plex Sans", system-ui, sans-serif;
   --font-deva: var(--font-deva), "IBM Plex Sans Devanagari", system-ui, sans-serif;

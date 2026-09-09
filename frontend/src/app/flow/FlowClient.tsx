@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import PhoneFrame from "@/components/PhoneFrame";
 import AlertCard from "@/components/AlertCard";
-import PriceChart from "@/components/PriceChart";
+import PriceDrop from "@/components/PriceDrop";
 import SvgMap from "@/components/SvgMap";
 import ImpactMeter from "@/components/ImpactMeter";
 import RiskBadge from "@/components/RiskBadge";
@@ -76,7 +76,7 @@ export default function FlowClient({
               <RiskBadge label={detail.label} />
             </div>
           </div>
-          <PriceChart series={detail.series} height={200} />
+          <PriceDrop were={detail.series[0].price} now={detail.latestPrice} risk={detail.risk} />
           <div className="mt-4" style={{ opacity: routed ? 1 : 0.35, transition: "opacity .5s" }}>
             <ImpactMeter active={routed} rupees={totals.rupeesSaved} kg={totals.kgRescued} units={totals.unitsEngaged} />
           </div>
