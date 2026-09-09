@@ -33,10 +33,12 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
-**To scan the QR and receive the alert on a real phone (same Wi-Fi):** start it bound to the
-network and open the console at your laptop's network address so the QR points there —
+**To scan the QR and receive the alert on a real phone (same Wi-Fi):** use a **production**
+build, not `npm run dev` — the dev server's live-reload only works on `localhost`, so on a
+second device the page loads but its JavaScript never hydrates (dead buttons, no auto-ring).
 ```bash
-npx next dev -H 0.0.0.0 -p 3000
+npm run build
+npx next start -H 0.0.0.0 -p 3000
 # then on the laptop open  http://<your-lan-ip>:3000/admin  (e.g. http://192.168.1.12:3000/admin)
 ```
 Route a crop → scan the QR with a phone on the same Wi-Fi → the farmer app rings and speaks.

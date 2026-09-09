@@ -68,7 +68,9 @@ export default function SvgMap({
         {/* units */}
         {units.map((u) => {
           const active = routed && matchedSlugs.has(u.slug);
-          const cx = px(u.lng), cy = py(u.lat);
+          let cx = px(u.lng), cy = py(u.lat);
+          // nudge a unit that sits on top of the mandi so its dot + label are readable
+          if (Math.hypot(cx - dcx, cy - dcy) < 28) { cx = dcx - 46; cy = dcy + 44; }
           const t = tonnesBy[u.slug];
           return (
             <g key={u.slug}>
