@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Sans_Devanagari, IBM_Plex_Mono, Noto_Sans_Kannada } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,16 @@ export const metadata: Metadata = {
   title: "Kisan Setu — stop the crop from being dumped",
   description:
     "Spot a crop price crash before it happens and route the surplus to nearby processing units — so a crop that would rot becomes a product that lasts.",
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  appleWebApp: { capable: true, title: "Krishi Saathi", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f3d24",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,105 +1,109 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PhoneFrame from "@/components/PhoneFrame";
+import Link from "next/link";
 import AlertCard from "@/components/AlertCard";
+import IncomingCall from "@/components/IncomingCall";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import { onDispatch, readLatestDispatch, respondDispatch, type Dispatch } from "@/lib/dispatch";
-import { STR, loadLang, saveLang, type Lang } from "@/lib/i18n";
+import { speak, stopSpeak } from "@/lib/speak";
+import { STR, voiceCode, loadLang, saveLang, type Lang } from "@/lib/i18n";
 import type { AlertBundle } from "@/lib/engine";
 
-type Cur = { id: string; content: AlertBundle; status: "pending" | "accepted" | "declined" } | null;
+type Phase = "home" | "ringing" | "details" | "accepted" | "declined";
 
 function toContent(d: Dispatch): AlertBundle {
   return { cropNames: d.cropNames, unitName: d.unitName, offer: d.offer, crash: d.crash, texts: d.texts };
 }
 
-export default function FarmerApp({ sample }: { sample: AlertBundle }) {
-  const [cur, setCur] = useState<Cur>(null);
-  const [live, setLive] = useState(false);
+export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBundle; incoming: AlertBundle | null; auto: boolean }) {
   const [lang, setLang] = useState<Lang>("en");
+  const [phase, setPhase] = useState<Phase>("home");
+  const [alert, setAlert] = useState<AlertBundle | null>(null);
+  const [dispatchId, setDispatchId] = useState<string | null>(null);
 
   useEffect(() => setLang(loadLang()), []);
 
+  // ring on: URL handoff (scanned QR), a live dispatch, or a persisted pending one
   useEffect(() => {
+    if (incoming && auto) {
+      setAlert(incoming);
+      setPhase("ringing");
+      return;
+    }
     const latest = readLatestDispatch();
     if (latest && latest.status === "pending") {
-      setCur({ id: latest.id, content: toContent(latest), status: "pending" });
-      setLive(true);
+      setAlert(toContent(latest));
+      setDispatchId(latest.id);
+      setPhase("ringing");
     }
     return onDispatch((d) => {
-      setCur({ id: d.id, content: toContent(d), status: "pending" });
-      setLive(true);
+      setAlert(toContent(d));
+      setDispatchId(d.id);
+      setPhase("ringing");
     });
-  }, []);
+  }, [incoming, auto]);
 
+  function answer() {
+    setPhase("details");
+    if (alert) speak(alert.texts[lang], voiceCode[lang]);
+  }
   function respond(status: "accepted" | "declined") {
-    if (!cur) return;
-    if (cur.id !== "sample") respondDispatch(cur.id, status);
-    setCur({ ...cur, status });
+    stopSpeak();
+    if (dispatchId) respondDispatch(dispatchId, status);
+    setPhase(status);
+  }
+  function changeLang(l: Lang) {
+    setLang(l);
+    saveLang(l);
   }
 
-  function changeLang(l: Lang) { setLang(l); saveLang(l); }
+  const t = STR[lang];
+  const sc = lang === "hi" ? "deva" : lang === "kn" ? "kn" : "";
 
   return (
-    <main className="mx-auto max-w-6xl w-full px-5 py-10 flex-1">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-        {/* explainer */}
-        <div className="order-2 lg:order-1">
-          <div className="eyebrow">The farmer’s side</div>
-          <h1 className="display" style={{ fontSize: 30, fontWeight: 700, marginTop: 10 }}>
-            No app. No reading.<br />Just a phone call.
-          </h1>
-          <p className="muted" style={{ fontSize: 16, marginTop: 14, maxWidth: 460, lineHeight: 1.55 }}>
-            When a crash is coming, the farmer’s phone rings and <b>speaks the offer in their own
-            language</b>. They tap once to accept. Pick a language to see and hear it:
-          </p>
-
-          <div className="mt-5"><LanguageSwitch value={lang} onChange={changeLang} /></div>
-
-          <div className="flex items-center gap-2 mt-6">
-            <span className="pill">
-              <span className="badge-dot" style={{ background: live ? "var(--brand)" : "var(--ink-3)" }} />
-              {live ? "Live alert received" : "Waiting for an alert"}
-            </span>
+    <div style={{ minHeight: "100dvh", background: "var(--dash-bg)", display: "flex", justifyContent: "center" }}>
+      <div style={{ width: "100%", maxWidth: 440, background: "#fff", minHeight: "100dvh", display: "flex", flexDirection: "column", boxShadow: "0 0 40px rgba(20,35,26,.06)" }}>
+        {/* app top bar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid var(--dash-line)" }}>
+          <div className="flex items-center gap-2">
+            <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden><rect width="32" height="32" rx="8" fill="var(--brand)" /><path d="M6 22c4-7 16-7 20 0" stroke="#fff" strokeWidth="2.3" fill="none" strokeLinecap="round" /><rect x="8" y="22" width="2.3" height="4.5" rx="1" fill="#fff" /><rect x="21.7" y="22" width="2.3" height="4.5" rx="1" fill="#fff" /><circle cx="16" cy="12" r="2.3" fill="var(--turmeric)" /></svg>
+            <span className={`display ${sc}`} style={{ fontWeight: 700, fontSize: 15 }}>{t.saathi}</span>
           </div>
+          <LanguageSwitch value={lang} onChange={changeLang} />
+        </div>
 
-          {!live && (
-            <>
-              <p className="faint" style={{ fontSize: 13, marginTop: 14, lineHeight: 1.5, maxWidth: 460 }}>
-                Open the <b>Officer console</b> in another window and route a crop — it will appear on
-                this phone instantly. Or preview one now:
-              </p>
-              <button className="btn btn-primary mt-3" onClick={() => setCur({ id: "sample", content: sample, status: "pending" })}>
-                Show a sample alert
-              </button>
-            </>
+        {/* screen */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          {phase === "home" && <Home lang={lang} onSample={() => { setAlert(sample); setDispatchId(null); setPhase("ringing"); }} />}
+          {phase === "ringing" && alert && (
+            <IncomingCall cropName={alert.cropNames[lang]} lang={lang} onAnswer={answer} onDecline={() => respond("declined")} />
           )}
+          {phase === "details" && alert && (
+            <AlertCard a={alert} lang={lang} status="pending" onAccept={() => respond("accepted")} onDecline={() => respond("declined")} />
+          )}
+          {phase === "accepted" && alert && <AlertCard a={alert} lang={lang} status="accepted" />}
+          {phase === "declined" && alert && <AlertCard a={alert} lang={lang} status="declined" />}
         </div>
 
-        {/* the phone */}
-        <div className="order-1 lg:order-2 flex justify-center">
-          <PhoneFrame>
-            {cur ? (
-              <AlertCard a={cur.content} lang={lang} status={cur.status} onAccept={() => respond("accepted")} onDecline={() => respond("declined")} />
-            ) : (
-              <Waiting lang={lang} />
-            )}
-          </PhoneFrame>
-        </div>
+        {(phase === "accepted" || phase === "declined") && (
+          <button className="btn" style={{ margin: 16 }} onClick={() => setPhase("home")}>← Back</button>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
 
-function Waiting({ lang }: { lang: Lang }) {
+function Home({ lang, onSample }: { lang: Lang; onSample: () => void }) {
   const t = STR[lang];
   const sc = lang === "hi" ? "deva" : lang === "kn" ? "kn" : "";
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 26, color: "var(--ink-2)" }}>
-      <div style={{ fontSize: 34 }}>📞</div>
-      <div className={`display ${sc}`} style={{ fontSize: 18, fontWeight: 600, marginTop: 10, color: "var(--ink)" }}>{t.saathi}</div>
-      <p className={sc} style={{ fontSize: 13, marginTop: 6 }}>{t.waiting}</p>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 30, gap: 6 }}>
+      <div style={{ fontSize: 44 }}>📞</div>
+      <div className={`display ${sc}`} style={{ fontSize: 20, fontWeight: 700, marginTop: 8 }}>{t.saathi}</div>
+      <p className={`muted ${sc}`} style={{ fontSize: 14, marginTop: 4 }}>{t.waiting}</p>
+      <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={onSample}>Show a sample alert</button>
+      <Link href="/admin" className="link" style={{ fontSize: 12.5, marginTop: 14 }}>Officer console →</Link>
     </div>
   );
 }
