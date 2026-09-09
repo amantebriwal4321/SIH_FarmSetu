@@ -4,7 +4,7 @@
 **Repo:** https://github.com/amantebriwal4321/SIH_FarmSetu
 
 > One master document for the whole team — read this and you can answer almost any question.
-> For the sharp Q&A (pricing, "doesn't the govt already do this", etc.) see `JUDGE-QA.md`.
+> For the sharp Q&A (pricing, "doesn't the govt already do this", etc.) see `FAQ.md`.
 
 ---
 
@@ -227,7 +227,7 @@ the farmer app installs to the home screen.
 | **Data / engine** | Wire real Agmarknet data for a real district; keep the prediction defensible |
 | **Pitch deck** | ~10 slides: problem → solution → demo → impact |
 | **Field test** *(the differentiator)* | Test with 2–3 real farmers + an FPO/SHG or agri officer; record names + quotes |
-| **Q&A + domain** | Own `JUDGE-QA.md`; know the schemes cold; anticipate judge questions |
+| **Q&A + domain** | Own `FAQ.md`; know the schemes cold; anticipate judge questions |
 
 ---
 
