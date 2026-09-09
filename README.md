@@ -33,6 +33,15 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
+**To scan the QR and receive the alert on a real phone (same Wi-Fi):** start it bound to the
+network and open the console at your laptop's network address so the QR points there —
+```bash
+npx next dev -H 0.0.0.0 -p 3000
+# then on the laptop open  http://<your-lan-ip>:3000/admin  (e.g. http://192.168.1.12:3000/admin)
+```
+Route a crop → scan the QR with a phone on the same Wi-Fi → the farmer app rings and speaks.
+(Deploying to Vercel makes the QR work on any phone, even mobile data — see below.)
+
 That's it — all data and logic live in `src/lib/engine` (a transparent crash-risk rule + a
 distance/capacity matching engine over a deterministic Kolar tomato-crash seed). Nothing to
 run on a server, works fully offline.
