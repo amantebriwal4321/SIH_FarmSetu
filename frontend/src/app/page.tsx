@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
+import FieldScene from "@/components/FieldScene";
 import { getOverview, inr, num } from "@/lib/engine";
 
 export default function Page() {
@@ -7,29 +8,36 @@ export default function Page() {
   return (
     <>
       <TopBar />
-      <main className="mx-auto max-w-6xl w-full px-5 flex-1">
-        {/* hero */}
-        <section className="pt-14 pb-10">
-          <div className="eyebrow">Agriculture · FoodTech · Rural Development</div>
-          <h1 className="display" style={{ fontSize: "clamp(30px, 5vw, 52px)", lineHeight: 1.05, marginTop: 12, maxWidth: 900 }}>
-            The farmer gets ₹5. You pay ₹25.<br />
-            And the crop still <span className="mark">rots</span>.
-          </h1>
-          <p className="muted" style={{ fontSize: 17, marginTop: 18, maxWidth: 620, lineHeight: 1.55 }}>
-            Kisan Setu spots a crop price crash before it happens and routes the surplus to
-            nearby processing units — so a crop that would be dumped becomes a product that lasts,
-            made by rural women.
-          </p>
+      <main className="flex-1">
+        {/* hero — a field at dawn */}
+        <section className="relative overflow-hidden" style={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center" }}>
+          <FieldScene />
+          <div className="relative mx-auto max-w-6xl w-full px-5" style={{ zIndex: 1, paddingTop: 32, paddingBottom: 56 }}>
+            <div className="eyebrow reveal" style={{ animationDelay: ".1s" }}>Agriculture · FoodTech · Rural Development</div>
+            <h1 className="display" style={{ fontSize: "clamp(32px, 5.4vw, 58px)", lineHeight: 1.04, marginTop: 14, maxWidth: 980 }}>
+              <span className="reveal" style={{ display: "block", animationDelay: ".26s" }}>The farmer gets ₹5. You pay ₹25.</span>
+              <span className="reveal" style={{ display: "block", animationDelay: ".44s" }}>And the crop still <span className="mark">rots</span>.</span>
+            </h1>
+            <p className="muted reveal" style={{ animationDelay: ".62s", fontSize: 17.5, marginTop: 20, maxWidth: 650, lineHeight: 1.55 }}>
+              Kisan Setu spots a crop price crash before it happens and routes the surplus to nearby
+              processing units — so a crop that would be dumped becomes a product that lasts, made by rural women.
+            </p>
 
-          <div className="flex flex-wrap items-center gap-3 mt-8">
-            <Link href="/flow" className="btn btn-primary btn-lg">▶ Watch the 60-second flow</Link>
-            <Link href="/admin" className="btn btn-lg">Open officer console</Link>
-            <Link href="/farmer" className="btn btn-lg">Open farmer app</Link>
+            <div className="flex flex-wrap items-center gap-3 mt-8 reveal" style={{ animationDelay: ".78s" }}>
+              <Link href="/flow" className="btn btn-primary btn-lg">▶ Watch the 60-second flow</Link>
+              <Link href="/admin" className="btn btn-lg">Open officer console</Link>
+              <Link href="/farmer" className="btn btn-lg">Open farmer app</Link>
+            </div>
+
+            <div className="reveal faint" style={{ animationDelay: "1s", marginTop: 30, fontSize: 12.5, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ animation: "bob 1.8s ease-in-out infinite" }}>↓</span> scroll to see how it works
+            </div>
           </div>
         </section>
 
+        <div className="mx-auto max-w-6xl w-full px-5">
         {/* the two sides */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-4">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-4 pt-6">
           <Door
             href="/admin"
             tag="For the officer"
@@ -71,6 +79,7 @@ export default function Page() {
             10,000-FPO scheme — is already funded; Kisan Setu is the missing wire that connects them.
           </p>
         </section>
+        </div>
       </main>
     </>
   );
