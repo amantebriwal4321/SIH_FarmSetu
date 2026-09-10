@@ -1,12 +1,14 @@
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import FieldScene from "@/components/FieldScene";
+import IntroSequence from "@/components/IntroSequence";
 import { getOverview, inr, num } from "@/lib/engine";
 
 export default function Page() {
   const o = getOverview();
   return (
     <>
+      <IntroSequence />
       <TopBar />
       <main className="flex-1">
         {/* hero — a field at dawn */}
