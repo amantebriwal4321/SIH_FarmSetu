@@ -6,14 +6,17 @@ import AlertCard from "@/components/AlertCard";
 import IncomingCall from "@/components/IncomingCall";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import { onDispatch, readLatestDispatch, respondDispatch, type Dispatch } from "@/lib/dispatch";
-import { speak, stopSpeak } from "@/lib/speak";
-import { STR, voiceCode, loadLang, saveLang, type Lang } from "@/lib/i18n";
+import { stopSpeak } from "@/lib/speak";
+import { STR, loadLang, saveLang, type Lang } from "@/lib/i18n";
 import type { AlertBundle } from "@/lib/engine";
 
 type Phase = "home" | "ringing" | "details" | "accepted" | "declined";
 
 function toContent(d: Dispatch): AlertBundle {
-  return { cropNames: d.cropNames, unitName: d.unitName, offer: d.offer, crash: d.crash, texts: d.texts };
+  return {
+    cropNames: d.cropNames, unitName: d.unitName, offer: d.offer, crash: d.crash,
+    productName: d.productName ?? "", productPrice: d.productPrice ?? 0, texts: d.texts,
+  };
 }
 
 export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBundle; incoming: AlertBundle | null; auto: boolean }) {
@@ -45,8 +48,7 @@ export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBun
   }, [incoming, auto]);
 
   function answer() {
-    setPhase("details");
-    if (alert) speak(alert.texts[lang], voiceCode[lang]);
+    setPhase("details"); // the alert card auto-plays the message itself
   }
   function respond(status: "accepted" | "declined") {
     stopSpeak();
@@ -80,7 +82,7 @@ export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBun
             <IncomingCall cropName={alert.cropNames[lang]} lang={lang} onAnswer={answer} onDecline={() => respond("declined")} />
           )}
           {phase === "details" && alert && (
-            <AlertCard a={alert} lang={lang} status="pending" onAccept={() => respond("accepted")} onDecline={() => respond("declined")} />
+            <AlertCard a={alert} lang={lang} status="pending" autoPlay onAccept={() => respond("accepted")} onDecline={() => respond("declined")} />
           )}
           {phase === "accepted" && alert && <AlertCard a={alert} lang={lang} status="accepted" />}
           {phase === "declined" && alert && <AlertCard a={alert} lang={lang} status="declined" />}

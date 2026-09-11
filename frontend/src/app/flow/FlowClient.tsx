@@ -8,8 +8,8 @@ import SvgMap from "@/components/SvgMap";
 import ImpactMeter from "@/components/ImpactMeter";
 import RiskBadge from "@/components/RiskBadge";
 import LanguageSwitch from "@/components/LanguageSwitch";
-import { speak, stopSpeak } from "@/lib/speak";
-import { STR, voiceCode, loadLang, saveLang, type Lang } from "@/lib/i18n";
+import { stopSpeak } from "@/lib/speak";
+import { STR, loadLang, saveLang, type Lang } from "@/lib/i18n";
 import { num, UNITS, type CropDetail, type Match, type MatchTotals, type AlertBundle } from "@/lib/engine";
 
 const STEP_MS = 4200;
@@ -37,14 +37,12 @@ export default function FlowClient({
   useEffect(() => {
     if (!playing) return;
     if (step >= STEPS.length - 1) { setPlaying(false); return; }
+    // hold on the Listen step so the spoken message can finish and be replayed
+    // in each language — don't auto-advance past it.
+    if (step === 3) { setPlaying(false); return; }
     timer.current = setTimeout(() => setStep((s) => s + 1), STEP_MS);
     return () => { if (timer.current) clearTimeout(timer.current); };
   }, [playing, step]);
-
-  useEffect(() => {
-    if (step === 3) speak(alert.texts[lang], voiceCode[lang]);
-    return () => stopSpeak();
-  }, [step, lang, alert.texts]);
 
   const routed = step >= 1;
 
@@ -98,7 +96,7 @@ export default function FlowClient({
           <PhoneFrame height={460}>
             {step < 2 && <Waiting lang={lang} />}
             {step === 2 && <Ringing crop={alert.cropNames[lang]} lang={lang} />}
-            {step === 3 && <AlertCard a={alert} lang={lang} status="pending" />}
+            {step === 3 && <AlertCard a={alert} lang={lang} status="pending" autoPlay />}
             {step >= 4 && <AlertCard a={alert} lang={lang} status="accepted" />}
           </PhoneFrame>
         </div>

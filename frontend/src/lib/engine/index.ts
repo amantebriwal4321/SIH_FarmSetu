@@ -123,8 +123,19 @@ export type AlertBundle = {
   unitName: string;
   offer: number;
   crash: number;
+  productName: string;   // what the unit turns the crop into (e.g. "paste")
+  productPrice: number;  // ₹/kg the unit sells that product for in the city (0 = unknown)
   texts: Record<Lang, string>;
 };
+
+// Best city price the matched unit can get for the product it makes — this is why
+// the unit can afford to pay the farmer above the crashing mandi price.
+function productValue(products: string[]): { name: string; price: number } {
+  const buyer = BUYERS
+    .filter((b) => b.wants.some((w) => products.includes(w)))
+    .sort((a, b) => b.pricePerKg - a.pricePerKg)[0];
+  return { name: products[0] ?? "paste", price: buyer?.pricePerKg ?? 0 };
+}
 
 export function alertText(slug: string): AlertBundle | null {
   const c = CROPS.find((x) => x.slug === slug);
@@ -137,7 +148,7 @@ export function alertText(slug: string): AlertBundle | null {
 
   if (!best) {
     return {
-      cropNames, unitName: "", offer, crash,
+      cropNames, unitName: "", offer, crash, productName: "", productPrice: 0,
       texts: {
         en: `${c.name} prices are crashing. No processing unit is free nearby yet.`,
         hi: `${c.nameHi} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।`,
@@ -150,9 +161,10 @@ export function alertText(slug: string): AlertBundle | null {
   const nearEn = best.distanceKm < 1 ? "in your area" : `${km} km away`;
   const nearHi = best.distanceKm < 1 ? "आपके पास" : `${km} किमी दूर`;
   const nearKn = best.distanceKm < 1 ? "ನಿಮ್ಮ ಹತ್ತಿರ" : `${km} ಕಿಮೀ ದೂರ`;
+  const prod = productValue(best.products || []);
 
   return {
-    cropNames, unitName: best.unitName, offer, crash,
+    cropNames, unitName: best.unitName, offer, crash, productName: prod.name, productPrice: prod.price,
     texts: {
       en: `${c.name} prices are crashing (now ₹${crash}/kg). Do not dump your crop. ${best.unitName}, ${nearEn}, will buy it at ₹${offer}/kg.`,
       hi: `${c.nameHi} के दाम गिर रहे हैं (अभी ₹${crash}/किलो)। फसल मत फेंकिए। ${best.unitName}, ${nearHi}, ₹${offer}/किलो में खरीदेगा।`,

@@ -13,6 +13,8 @@ export type Dispatch = {
   unitName: string;
   offer: number;
   crash: number;
+  productName?: string;
+  productPrice?: number;
   farmers: number;
   texts: Record<Lang, string>;
   ts: number;

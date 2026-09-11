@@ -41,6 +41,7 @@ export default function AdminConsole({
       sendDispatch({
         id: `${selected}-${Date.now()}`, cropSlug: selected, cropNames: d.alert.cropNames,
         unitName: best.unitName, offer: best.offerPrice, crash: d.totals.crashPrice, farmers,
+        productName: d.alert.productName, productPrice: d.alert.productPrice,
         texts: d.alert.texts, ts: Date.now(), status: "pending",
       });
     }
