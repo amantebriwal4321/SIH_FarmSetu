@@ -260,6 +260,41 @@ export default function FieldConsole({
               <span>{totalTonnes.toFixed(1)} tonnes confirmed for pickup van</span>
               <span>Village FPO Hub</span>
             </div>
+
+            {/* Crop Task Switcher */}
+            <div className="flex items-center gap-2 pt-3 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
+              <span className="faint" style={{ fontSize: 12, fontWeight: 600 }}>Active Crop Alert:</span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {crops.map((c) => {
+                  const active = selectedCrop === c.slug;
+                  const cFarmers = farmersForCrop(c.slug, { role, partnerName: currentPartner.name });
+                  return (
+                    <button
+                      key={c.slug}
+                      onClick={() => setSelectedCrop(c.slug)}
+                      className="pill"
+                      style={{
+                        cursor: "pointer",
+                        border: active ? "1.5px solid var(--brand)" : "1px solid var(--border)",
+                        background: active ? "var(--brand)" : "var(--dash-bg)",
+                        color: active ? "#fff" : "var(--ink)",
+                        fontWeight: 600,
+                        fontSize: 12,
+                        padding: "5px 10px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 5,
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <span>{c.slug === "tomato" ? "🍅" : c.slug === "onion" ? "🧅" : "🫘"}</span>
+                      <span>{c.name}</span>
+                      <span style={{ fontSize: 10.5, opacity: active ? 0.9 : 0.6 }}>({cFarmers.length})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Simple Farmer Task List */}
@@ -299,7 +334,7 @@ export default function FieldConsole({
                             </span>
                           </div>
                           <div className="faint" style={{ fontSize: 12.5, marginTop: 2 }}>
-                            📍 {f.village} · {f.plotAcres} acres · ~{estTonnes} t tomatoes
+                            📍 {f.village} · {f.plotAcres} acres · ~{estTonnes} t {d.detail.name.toLowerCase()}
                           </div>
                         </div>
 
