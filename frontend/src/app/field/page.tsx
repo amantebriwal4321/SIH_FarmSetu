@@ -4,7 +4,16 @@ import { getBaseUrl } from "@/lib/baseUrl";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<{ crop?: string; role?: string; partner?: string }>;
+}) {
+  const sp = searchParams ? await searchParams : {};
+  const initialCrop = sp.crop || "tomato";
+  const initialPartner = sp.partner || "";
+  const initialRole = sp.role || "";
+
   const crops = getCrops();
   const overview = getOverview();
   const { url: qrBase, isLan } = await getBaseUrl();
@@ -30,6 +39,9 @@ export default async function Page() {
       overview={overview}
       qrBase={qrBase}
       isLan={isLan}
+      initialCrop={initialCrop}
+      initialPartnerId={initialPartner}
+      initialRole={initialRole}
     />
   );
 }

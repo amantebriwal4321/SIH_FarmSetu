@@ -34,16 +34,26 @@ export default function FieldConsole({
   crops,
   details,
   overview,
+  initialCrop,
+  initialPartnerId,
+  initialRole,
 }: {
   crops: CropSummary[];
   details: Record<string, Detail>;
   overview: { district: string; farmersReached: number };
   qrBase: string;
   isLan: boolean;
+  initialCrop?: string;
+  initialPartnerId?: string;
+  initialRole?: string;
 }) {
-  const [role, setRole] = useState<PartnerRole>("krishi_sakhi");
-  const [partnerId, setPartnerId] = useState<string>("");
-  const [selectedCrop, setSelectedCrop] = useState<string>(crops[0]?.slug ?? "tomato");
+  const [role, setRole] = useState<PartnerRole>(
+    initialRole === "krishi_sakhi" || initialRole === "vle" || initialRole === "fpo"
+      ? initialRole
+      : "krishi_sakhi"
+  );
+  const [partnerId, setPartnerId] = useState<string>(initialPartnerId || "");
+  const [selectedCrop, setSelectedCrop] = useState<string>(initialCrop || crops[0]?.slug || "tomato");
   const [activeDispatch, setActiveDispatch] = useState<Dispatch | null>(null);
   const [bookedFarmers, setBookedFarmers] = useState<Record<string, { tonnes: number; method: string }>>({});
   const [toast, setToast] = useState<string>("");
@@ -52,21 +62,23 @@ export default function FieldConsole({
 
   useEffect(() => {
     setLang(loadLang());
-    try {
-      const savedRole = localStorage.getItem("ks_field_role") as PartnerRole;
-      if (savedRole && (savedRole === "krishi_sakhi" || savedRole === "vle" || savedRole === "fpo")) {
-        setRole(savedRole);
-      }
-      const savedPartner = localStorage.getItem("ks_field_partner_id");
-      if (savedPartner) {
-        setPartnerId(savedPartner);
-      }
-    } catch {}
+    if (!initialRole && !initialPartnerId) {
+      try {
+        const savedRole = localStorage.getItem("ks_field_role") as PartnerRole;
+        if (savedRole && (savedRole === "krishi_sakhi" || savedRole === "vle" || savedRole === "fpo")) {
+          setRole(savedRole);
+        }
+        const savedPartner = localStorage.getItem("ks_field_partner_id");
+        if (savedPartner) {
+          setPartnerId(savedPartner);
+        }
+      } catch {}
+    }
 
     const latest = readLatestDispatch();
     if (latest) {
       setActiveDispatch(latest);
-      if (latest.cropSlug) setSelectedCrop(latest.cropSlug);
+      if (!initialCrop && latest.cropSlug) setSelectedCrop(latest.cropSlug);
     }
 
     return onDispatch((d) => {
@@ -74,7 +86,7 @@ export default function FieldConsole({
       if (d.cropSlug) setSelectedCrop(d.cropSlug);
       setToast(`🚨 New Task Assigned: ${d.cropNames.en} price crash alert in your villages!`);
     });
-  }, []);
+  }, [initialRole, initialPartnerId, initialCrop]);
 
   const availablePartners = partnersByRole(role);
   const currentPartner =

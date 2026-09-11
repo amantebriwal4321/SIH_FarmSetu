@@ -11,7 +11,19 @@ import ValueChain from "@/components/ValueChain";
 import LivePrices, { type LivePricesData } from "@/components/LivePrices";
 import Toast from "@/components/Toast";
 import { sendDispatch, onConfirm, type PickupFarmer } from "@/lib/dispatch";
-import { inr, num, alertTargets, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit, type AlertBundle } from "@/lib/engine";
+import {
+  inr,
+  num,
+  alertTargets,
+  partnersByRole,
+  farmersForCrop,
+  type CropSummary,
+  type CropDetail,
+  type Match,
+  type MatchTotals,
+  type Unit,
+  type AlertBundle,
+} from "@/lib/engine";
 import Link from "next/link";
 
 type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle };
@@ -35,6 +47,16 @@ export default function AdminConsole({
   const targets = alertTargets(selected);
   const farmers = targets.count;
   const topVillages = targets.byVillage.slice(0, 3).map((v) => v.village).join(", ");
+
+  const krishiSakhis = partnersByRole("krishi_sakhi").map((p) => {
+    const fList = farmersForCrop(selected, { role: "krishi_sakhi", partnerName: p.name });
+    const pPickups = pickups.filter((pk) => p.villages.includes(pk.village));
+    return {
+      ...p,
+      farmerCount: fList.length,
+      pickups: pPickups,
+    };
+  });
 
   useEffect(() => { setRouted(false); setConfirmed(false); setPickups([]); }, [selected]);
   useEffect(() => onConfirm((p) => {
@@ -105,6 +127,91 @@ export default function AdminConsole({
                 Dispatched to field tier. <b>{num(d.totals.tonnesMatched)} t</b> routed to <b>{d.totals.unitsEngaged}</b> units at <b style={{ color: "var(--brand-deep)" }}>₹{d.totals.offerPrice}/kg</b>. <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} alerted through Krishi Sakhis, CSC VLEs, and FPOs.
               </p>
             )}
+          </div>
+
+          {/* Village Field Partners Dispatch & Coverage */}
+          <div className="card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div>
+                <div className="eyebrow mb-1">Village Extension Roster · Krishi Sakhi (KSCP)</div>
+                <h3 className="display" style={{ fontSize: 18, fontWeight: 700 }}>
+                  Field Partner Dispatch for {d.detail.name}
+                </h3>
+              </div>
+              {!routed ? (
+                <button className="btn btn-primary" onClick={routeIt}>
+                  📡 Dispatch {d.detail.name} Alert ({num(farmers)} growers) →
+                </button>
+              ) : (
+                <span className="badge badge-stable" style={{ fontSize: 12, padding: "5px 12px" }}>
+                  ✓ Dispatched to 3 Village Clusters
+                </span>
+              )}
+            </div>
+
+            <p className="faint" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 16 }}>
+              The APMC officer dispatches village-specific {d.detail.name.toLowerCase()} grower rosters directly to local Krishi Sakhis to contact smallholders who don&apos;t use smartphones.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {krishiSakhis.map((ks) => {
+                const fieldUrl = `${qrBase}/field?crop=${selected}&partner=${ks.id}`;
+                return (
+                  <div
+                    key={ks.id}
+                    className="panel p-3.5 flex flex-col justify-between"
+                    style={{
+                      background: routed ? "#f0fdf4" : "var(--surface)",
+                      borderColor: routed ? "#86efac" : "var(--border)",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
+                    }}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span style={{ fontWeight: 700, fontSize: 14 }}>👩‍🌾 {ks.name}</span>
+                        <span
+                          className="pill"
+                          style={{
+                            fontSize: 10.5,
+                            background: routed ? "var(--brand)" : "var(--dash-bg)",
+                            color: routed ? "#fff" : "var(--ink-2)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {ks.farmerCount} {d.detail.name.toLowerCase()} plots
+                        </span>
+                      </div>
+                      <div className="faint" style={{ fontSize: 11.5, lineHeight: 1.45, marginTop: 4 }}>
+                        📍 <b>Villages:</b> {ks.villages.join(", ")}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--border-light)" }}>
+                      <div className="flex items-center justify-between faint" style={{ fontSize: 11.5, marginBottom: 6 }}>
+                        <span>Status:</span>
+                        <span style={{ fontWeight: 700, color: routed ? "var(--brand-deep)" : "var(--ink-3)" }}>
+                          {routed ? `${ks.pickups.length} / ${ks.farmerCount} reached` : "Pending Dispatch"}
+                        </span>
+                      </div>
+                      <Link
+                        href={fieldUrl}
+                        target="_blank"
+                        className="btn btn-sm w-full"
+                        style={{
+                          fontSize: 11.5,
+                          display: "inline-flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          background: "#fff",
+                        }}
+                      >
+                        Open {ks.name.split(" ")[0]}&apos;s Field View ↗
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {routed && (
