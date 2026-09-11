@@ -82,11 +82,14 @@ through the FPO/SHG and the village-level worker, which is how rural tech actual
 **We push the offer; the farmer sends back a yes; the crop follows.** In plain steps:
 - **We provide** the offer — a call/SMS the system *sends* to the farmer (not the farmer searching for it).
 - **The farmer decides** — presses **1 to accept**, **2 to decline**. That's the only input from them.
-- **On accept, the "yes" is recorded** and the **unit is notified** to expect the supply. (In the demo
-  that's the officer console flipping to "confirmed"; in production it's a saved record + a message to
-  the unit.)
-- **The crop moves via the FPO / a village aggregation point** — the farmer brings it (or the FPO/unit
-  arranges pickup) to the processing unit, which turns it into paste and **pays ₹9/kg**.
+- **On accept, the "yes" is recorded** and the **officer/unit sees a live "who's coming" pickup list**
+  — *farmer name · village · tonnes* — so they know how much to expect and which villages the van
+  routes through. (In the demo the officer console fills this list as farmers accept.)
+- **A non-tech farmer never navigates to the unit.** The same voice call tells them, in their language,
+  a **local collection point they already know + a time + a phone number** ("bring it to the Kolar FPO
+  yard near the bus stand by 10 am; call 94480 21730"). The **FPO aggregates** from many farmers at that
+  point and a **van makes one trip** to the processing unit — no maps, no long travel per farmer.
+- At the unit the crop is weighed and the farmer is **paid ₹9/kg**; the unit turns it into paste.
 
 **The app makes the match and captures the commitment — it never moves the crop itself.** Logistics
 (aggregation, transport) is the FPO/unit's existing job; we just connect the right farmer to the right
