@@ -16,6 +16,7 @@ type Str = {
   play: string;
   pause: string;
   resume: string;
+  noVoice: string;
   accept: string;
   notNow: string;
   booked: string;
@@ -39,6 +40,7 @@ export const STR: Record<Lang, Str> = {
     play: "🔊 Play message",
     pause: "❚❚ Pause",
     resume: "▶ Resume",
+    noVoice: "🔇 No English voice on this device — open on an Android phone to hear it",
     accept: "Accept",
     notNow: "Not now",
     booked: "Booked",
@@ -60,6 +62,7 @@ export const STR: Record<Lang, Str> = {
     play: "🔊 संदेश सुनें",
     pause: "❚❚ रोकें",
     resume: "▶ जारी रखें",
+    noVoice: "🔇 इस डिवाइस में हिंदी आवाज़ नहीं है — एंड्रॉइड फ़ोन पर सुनें",
     accept: "स्वीकारें",
     notNow: "अभी नहीं",
     booked: "बुक हो गया",
@@ -81,6 +84,7 @@ export const STR: Record<Lang, Str> = {
     play: "🔊 ಸಂದೇಶ ಕೇಳಿ",
     pause: "❚❚ ನಿಲ್ಲಿಸಿ",
     resume: "▶ ಮುಂದುವರಿಸಿ",
+    noVoice: "🔇 ಈ ಸಾಧನದಲ್ಲಿ ಕನ್ನಡ ಧ್ವನಿ ಇಲ್ಲ — ಆಂಡ್ರಾಯ್ಡ್ ಫೋನ್‌ನಲ್ಲಿ ಕೇಳಿ",
     accept: "ಒಪ್ಪಿ",
     notNow: "ಈಗ ಬೇಡ",
     booked: "ಬುಕ್ ಆಗಿದೆ",

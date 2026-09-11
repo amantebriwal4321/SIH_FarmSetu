@@ -85,7 +85,7 @@ export default function AlertCard({
           text={a.texts[lang]}
           voice={voiceCode[lang]}
           autoPlay={autoPlay}
-          labels={{ play: t.play, pause: t.pause, resume: t.resume }}
+          labels={{ play: t.play, pause: t.pause, resume: t.resume, noVoice: t.noVoice }}
           className="btn btn-ghost"
           style={{ alignSelf: "flex-start", padding: "8px 14px", fontSize: 13 }}
         />
