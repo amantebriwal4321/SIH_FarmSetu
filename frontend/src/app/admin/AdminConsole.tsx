@@ -8,6 +8,7 @@ import SvgMap from "@/components/SvgMap";
 import RiskBadge, { riskColor } from "@/components/RiskBadge";
 import QRCodeView from "@/components/QRCodeView";
 import ValueChain from "@/components/ValueChain";
+import LivePrices, { type LivePricesData } from "@/components/LivePrices";
 import Toast from "@/components/Toast";
 import { sendDispatch, onConfirm, type PickupFarmer } from "@/lib/dispatch";
 import { inr, num, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit, type AlertBundle } from "@/lib/engine";
@@ -19,9 +20,9 @@ type Overview = {
 };
 
 export default function AdminConsole({
-  overview, crops, units, details, qrBase, isLan,
+  overview, crops, units, details, qrBase, isLan, live,
 }: {
-  overview: Overview; crops: CropSummary[]; units: Unit[]; details: Record<string, Detail>; qrBase: string; isLan: boolean;
+  overview: Overview; crops: CropSummary[]; units: Unit[]; details: Record<string, Detail>; qrBase: string; isLan: boolean; live: LivePricesData;
 }) {
   const [selected, setSelected] = useState(crops[0]?.slug);
   const [routed, setRouted] = useState(false);
@@ -157,6 +158,8 @@ export default function AdminConsole({
               ))}
             </div>
           </div>
+
+          <LivePrices live={live} />
 
           {routed && (
             <div className="card p-5 flex flex-col items-center text-center">
