@@ -15,11 +15,16 @@ export type Dispatch = {
   crash: number;
   productName?: string;
   productPrice?: number;
+  collectionPoint?: string;
+  unitPhone?: string;
   farmers: number;
   texts: Record<Lang, string>;
   ts: number;
   status: "pending" | "accepted" | "declined";
 };
+
+// who accepted, for the officer's "who's coming" pickup list
+export type PickupFarmer = { name: string; village: string; tonnes: number };
 
 const CHANNEL = "kisan-setu-v2";
 const LS_DISPATCH = "ks_dispatch_v2";
@@ -52,8 +57,8 @@ export function readLatestDispatch(): Dispatch | null {
   }
 }
 
-export function respondDispatch(id: string, status: "accepted" | "declined") {
-  const payload = { id, status, ts: Date.now() };
+export function respondDispatch(id: string, status: "accepted" | "declined", farmer?: PickupFarmer) {
+  const payload = { id, status, ts: Date.now(), farmer };
   try {
     localStorage.setItem(LS_CONFIRM, JSON.stringify(payload));
     const d = readLatestDispatch();
@@ -77,7 +82,7 @@ export function onDispatch(cb: (d: Dispatch) => void): () => void {
   };
 }
 
-export function onConfirm(cb: (p: { id: string; status: string }) => void): () => void {
+export function onConfirm(cb: (p: { id: string; status: string; farmer?: PickupFarmer }) => void): () => void {
   const c = chan();
   if (!c) return () => {};
   const handler = (e: MessageEvent) => {

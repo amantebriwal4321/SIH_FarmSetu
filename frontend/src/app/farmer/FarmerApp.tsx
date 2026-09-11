@@ -8,14 +8,15 @@ import LanguageSwitch from "@/components/LanguageSwitch";
 import { onDispatch, readLatestDispatch, respondDispatch, type Dispatch } from "@/lib/dispatch";
 import { stopSpeak } from "@/lib/speak";
 import { STR, loadLang, saveLang, loadMode, saveMode, type Lang, type Mode } from "@/lib/i18n";
-import type { AlertBundle } from "@/lib/engine";
+import { DEMO_FARMERS, type AlertBundle } from "@/lib/engine";
 
 type Phase = "home" | "ringing" | "details" | "accepted" | "declined";
 
 function toContent(d: Dispatch): AlertBundle {
   return {
     cropSlug: d.cropSlug, cropNames: d.cropNames, unitName: d.unitName, offer: d.offer, crash: d.crash,
-    productName: d.productName ?? "", productPrice: d.productPrice ?? 0, texts: d.texts,
+    productName: d.productName ?? "", productPrice: d.productPrice ?? 0,
+    collectionPoint: d.collectionPoint ?? "", unitPhone: d.unitPhone ?? "", texts: d.texts,
   };
 }
 
@@ -53,7 +54,12 @@ export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBun
   }
   function respond(status: "accepted" | "declined") {
     stopSpeak();
-    if (dispatchId) respondDispatch(dispatchId, status);
+    if (dispatchId) {
+      // demo has no farmer login — attach a believable identity so the officer's
+      // "who's coming" list fills realistically.
+      const farmer = status === "accepted" ? DEMO_FARMERS[Math.floor(Math.random() * DEMO_FARMERS.length)] : undefined;
+      respondDispatch(dispatchId, status, farmer);
+    }
     setPhase(status);
   }
   function changeLang(l: Lang) {

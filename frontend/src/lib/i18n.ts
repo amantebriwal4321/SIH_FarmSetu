@@ -30,6 +30,7 @@ type Str = {
   header: (crop: string) => string;
   mandi: (crash: number) => string;
   bring: (crop: string, unit: string, offer: number) => string;
+  pickup: (crop: string, point: string, phone: string, unit: string) => string;
   // value chain (who gains what, and why buy from the farmer not the cheaper mandi)
   whyQ: (offer: number, crash: number) => string;
   chainFresh: string;
@@ -60,6 +61,7 @@ export const STR: Record<Lang, Str> = {
     header: (c) => `${c} price crashing`,
     mandi: (crash) => `Mandi is paying only ₹${crash}/kg today`,
     bring: (c, u, o) => `Bring your ${c} to ${u}. You’ll get ₹${o}/kg.`,
+    pickup: (c, point, phone, u) => `Bring your ${c} to ${point} by tomorrow 10 am. Call ${phone} to confirm — a van takes it from there to ${u}.`,
     whyQ: (offer, crash) => `Why buy from the farmer at ₹${offer} when the mandi is ₹${crash}?`,
     chainFresh: "glut, rots unsold",
     chainProcessed: (product) => `as ${product} · lasts`,
@@ -88,6 +90,7 @@ export const STR: Record<Lang, Str> = {
     header: (c) => `${c} के दाम गिर रहे हैं`,
     mandi: (crash) => `मंडी आज सिर्फ ₹${crash}/किलो दे रही है`,
     bring: (c, u, o) => `अपनी ${c} ${u} ले जाइए। ₹${o}/किलो मिलेगा।`,
+    pickup: (c, point, phone, u) => `अपनी ${c} कल सुबह 10 बजे तक ${point} पर पहुँचाएँ। पक्का करने के लिए ${phone} पर कॉल करें — वहाँ से वैन इसे ${u} तक ले जाएगी।`,
     whyQ: (offer, crash) => `मंडी में ₹${crash} है, फिर भी किसान से ₹${offer} में क्यों?`,
     chainFresh: "बहुत आवक, बिना बिके सड़ता",
     chainProcessed: (product) => `${product} बनकर · टिकाऊ`,
@@ -116,6 +119,7 @@ export const STR: Record<Lang, Str> = {
     header: (c) => `${c} ಬೆಲೆ ಕುಸಿಯುತ್ತಿದೆ`,
     mandi: (crash) => `ಮಂಡಿ ಇಂದು ₹${crash}/ಕೆಜಿ ಮಾತ್ರ ಕೊಡುತ್ತಿದೆ`,
     bring: (c, u, o) => `ನಿಮ್ಮ ${c} ${u} ಗೆ ತನ್ನಿ. ₹${o}/ಕೆಜಿ ಸಿಗುತ್ತದೆ.`,
+    pickup: (c, point, phone, u) => `ನಿಮ್ಮ ${c} ಅನ್ನು ನಾಳೆ ಬೆಳಿಗ್ಗೆ 10 ಗಂಟೆಯ ಒಳಗೆ ${point} ಗೆ ತನ್ನಿ. ಖಚಿತಪಡಿಸಲು ${phone} ಗೆ ಕರೆ ಮಾಡಿ — ಅಲ್ಲಿಂದ ವ್ಯಾನ್ ಅದನ್ನು ${u} ಗೆ ಒಯ್ಯುತ್ತದೆ.`,
     whyQ: (offer, crash) => `ಮಂಡಿಯಲ್ಲಿ ₹${crash} ಇರುವಾಗ ರೈತನಿಂದ ₹${offer}ಗೆ ಏಕೆ?`,
     chainFresh: "ಹೆಚ್ಚು ಆವಕ, ಮಾರಾಟವಾಗದೆ ಕೊಳೆಯುತ್ತದೆ",
     chainProcessed: (product) => `${product} ಆಗಿ · ಬಾಳಿಕೆ`,

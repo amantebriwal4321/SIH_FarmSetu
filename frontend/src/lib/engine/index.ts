@@ -124,8 +124,10 @@ export type AlertBundle = {
   unitName: string;
   offer: number;
   crash: number;
-  productName: string;   // what the unit turns the crop into (e.g. "paste")
-  productPrice: number;  // ₹/kg the unit sells that product for in the city (0 = unknown)
+  productName: string;    // what the unit turns the crop into (e.g. "paste")
+  productPrice: number;   // ₹/kg the unit sells that product for in the city (0 = unknown)
+  collectionPoint: string; // where the farmer drops the crop (a local FPO point)
+  unitPhone: string;       // helpline the farmer can call to confirm
   texts: Record<Lang, string>;
 };
 
@@ -150,6 +152,7 @@ export function alertText(slug: string): AlertBundle | null {
   if (!best) {
     return {
       cropSlug: c.slug, cropNames, unitName: "", offer, crash, productName: "", productPrice: 0,
+      collectionPoint: "", unitPhone: "",
       texts: {
         en: `${c.name} prices are crashing. No processing unit is free nearby yet.`,
         hi: `${c.nameHi} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।`,
@@ -163,9 +166,11 @@ export function alertText(slug: string): AlertBundle | null {
   const nearHi = best.distanceKm < 1 ? "आपके पास" : `${km} किमी दूर`;
   const nearKn = best.distanceKm < 1 ? "ನಿಮ್ಮ ಹತ್ತಿರ" : `${km} ಕಿಮೀ ದೂರ`;
   const prod = productValue(best.products || []);
+  const unit = UNITS.find((u) => u.slug === best.unitSlug);
 
   return {
     cropSlug: c.slug, cropNames, unitName: best.unitName, offer, crash, productName: prod.name, productPrice: prod.price,
+    collectionPoint: unit?.collectionPoint ?? "", unitPhone: unit?.phone ?? "",
     texts: {
       en: `${c.name} prices are crashing (now ₹${crash}/kg). Do not dump your crop. ${best.unitName}, ${nearEn}, will buy it at ₹${offer}/kg.`,
       hi: `${c.nameHi} के दाम गिर रहे हैं (अभी ₹${crash}/किलो)। फसल मत फेंकिए। ${best.unitName}, ${nearHi}, ₹${offer}/किलो में खरीदेगा।`,
@@ -180,5 +185,5 @@ export const num = (n: number) => Math.round(n).toLocaleString("en-IN");
 
 export type { Match, MatchTotals } from "./matching";
 export type { RiskLabel } from "./predictor";
-export type { Unit, District, Buyer } from "./seed";
-export { DISTRICT, UNITS, BUYERS } from "./seed";
+export type { Unit, District, Buyer, DemoFarmer } from "./seed";
+export { DISTRICT, UNITS, BUYERS, DEMO_FARMERS } from "./seed";

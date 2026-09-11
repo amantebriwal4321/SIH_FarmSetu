@@ -39,7 +39,7 @@ export default function AlertCard({
         <div style={{ fontSize: 40 }}>✓</div>
         <div className={`display ${sc}`} style={{ fontSize: 20, fontWeight: 700, marginTop: 6 }}>{t.booked}</div>
         <p className={sc} style={{ fontSize: 13.5, marginTop: 10, opacity: 0.9, lineHeight: 1.55 }}>
-          {t.bring(crop, a.unitName, a.offer)}
+          {a.collectionPoint ? t.pickup(crop, a.collectionPoint, a.unitPhone, a.unitName) : t.bring(crop, a.unitName, a.offer)}
         </p>
         <p className={`faint ${sc}`} style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>{t.bookedNote}</p>
       </Screen>

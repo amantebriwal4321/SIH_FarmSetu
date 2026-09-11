@@ -23,8 +23,11 @@ export type Unit = {
   weeklyCapacity: number;
   products: string[];
   contact: string;
+  collectionPoint: string; // the local FPO/SHG drop-off point a farmer already knows
+  phone: string;           // helpline the farmer can call to confirm
 };
 export type Buyer = { name: string; city: string; wants: string[]; pricePerKg: number };
+export type DemoFarmer = { name: string; village: string; tonnes: number };
 
 const DAYS = 60;
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
@@ -76,12 +79,26 @@ export const CROPS: Crop[] = CROP_DEFS.map((d) => {
 });
 
 export const UNITS: Unit[] = [
-  { slug: "kolar-mahila-foods", name: "Kolar Mahila SHG Foods", kind: "SHG", lat: 13.1367, lng: 78.1292, crops: ["tomato"], weeklyCapacity: 30, products: ["paste", "puree"], contact: "Kolar town" },
-  { slug: "srinivaspura-fpo", name: "Srinivaspura Farmer Producer Co.", kind: "FPO", lat: 13.341, lng: 78.214, crops: ["tomato", "onion"], weeklyCapacity: 55, products: ["paste", "flakes"], contact: "Srinivaspura" },
-  { slug: "malur-womens-unit", name: "Malur Women's Agro Unit", kind: "SHG", lat: 13.004, lng: 77.937, crops: ["tomato", "beans"], weeklyCapacity: 25, products: ["puree", "dried"], contact: "Malur" },
-  { slug: "chintamani-fpo", name: "Chintamani Farmer Producer Co.", kind: "FPO", lat: 13.402, lng: 78.053, crops: ["tomato", "onion"], weeklyCapacity: 60, products: ["paste", "ketchup"], contact: "Chintamani" },
-  { slug: "bangarpet-shg", name: "Bangarpet SHG Kitchen", kind: "SHG", lat: 12.991, lng: 78.178, crops: ["tomato"], weeklyCapacity: 20, products: ["paste"], contact: "Bangarpet" },
-  { slug: "mulbagal-cluster", name: "Mulbagal Food Cluster", kind: "FPO", lat: 13.165, lng: 78.393, crops: ["tomato", "onion"], weeklyCapacity: 40, products: ["flakes", "powder"], contact: "Mulbagal" },
+  { slug: "kolar-mahila-foods", name: "Kolar Mahila SHG Foods", kind: "SHG", lat: 13.1367, lng: 78.1292, crops: ["tomato"], weeklyCapacity: 30, products: ["paste", "puree"], contact: "Kolar town", collectionPoint: "Kolar APMC yard, near the bus stand", phone: "94480 21730" },
+  { slug: "srinivaspura-fpo", name: "Srinivaspura Farmer Producer Co.", kind: "FPO", lat: 13.341, lng: 78.214, crops: ["tomato", "onion"], weeklyCapacity: 55, products: ["paste", "flakes"], contact: "Srinivaspura", collectionPoint: "Srinivaspura FPO centre, near the taluk office", phone: "94491 55820" },
+  { slug: "malur-womens-unit", name: "Malur Women's Agro Unit", kind: "SHG", lat: 13.004, lng: 77.937, crops: ["tomato", "beans"], weeklyCapacity: 25, products: ["puree", "dried"], contact: "Malur", collectionPoint: "Malur SHG centre, near the railway station", phone: "97311 40265" },
+  { slug: "chintamani-fpo", name: "Chintamani Farmer Producer Co.", kind: "FPO", lat: 13.402, lng: 78.053, crops: ["tomato", "onion"], weeklyCapacity: 60, products: ["paste", "ketchup"], contact: "Chintamani", collectionPoint: "Chintamani FPO yard, near the market", phone: "90080 63417" },
+  { slug: "bangarpet-shg", name: "Bangarpet SHG Kitchen", kind: "SHG", lat: 12.991, lng: 78.178, crops: ["tomato"], weeklyCapacity: 20, products: ["paste"], contact: "Bangarpet", collectionPoint: "Bangarpet SHG kitchen, near the bus stand", phone: "96329 71104" },
+  { slug: "mulbagal-cluster", name: "Mulbagal Food Cluster", kind: "FPO", lat: 13.165, lng: 78.393, crops: ["tomato", "onion"], weeklyCapacity: 40, products: ["flakes", "powder"], contact: "Mulbagal", collectionPoint: "Mulbagal food cluster, near the highway junction", phone: "88617 22093" },
+];
+
+// Believable farmers for the officer's "who's coming" pickup list (demo has no farmer login).
+export const DEMO_FARMERS: DemoFarmer[] = [
+  { name: "Ramesh", village: "Vemgal", tonnes: 1.8 },
+  { name: "Lakshmi", village: "Sugatur", tonnes: 2.1 },
+  { name: "Manjunath", village: "Narasapura", tonnes: 1.2 },
+  { name: "Anitha", village: "Holur", tonnes: 1.6 },
+  { name: "Venkatesh", village: "Tekal", tonnes: 2.3 },
+  { name: "Shivamma", village: "Masti", tonnes: 1.4 },
+  { name: "Nagaraj", village: "Huttur", tonnes: 1.9 },
+  { name: "Bhagya", village: "Arabikothanur", tonnes: 1.1 },
+  { name: "Krishnappa", village: "Vokkaleri", tonnes: 2.0 },
+  { name: "Gowramma", village: "Dodda Ullarthi", tonnes: 1.5 },
 ];
 
 export const BUYERS: Buyer[] = [

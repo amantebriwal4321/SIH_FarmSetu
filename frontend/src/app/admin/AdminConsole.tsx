@@ -9,7 +9,7 @@ import RiskBadge, { riskColor } from "@/components/RiskBadge";
 import QRCodeView from "@/components/QRCodeView";
 import ValueChain from "@/components/ValueChain";
 import Toast from "@/components/Toast";
-import { sendDispatch, onConfirm } from "@/lib/dispatch";
+import { sendDispatch, onConfirm, type PickupFarmer } from "@/lib/dispatch";
 import { inr, num, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit, type AlertBundle } from "@/lib/engine";
 
 type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle };
@@ -27,12 +27,18 @@ export default function AdminConsole({
   const [routed, setRouted] = useState(false);
   const [toast, setToast] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const [pickups, setPickups] = useState<PickupFarmer[]>([]);
 
   const d = details[selected];
   const farmers = Math.max(120, Math.round(d.detail.surplusTonnes * 1.7));
 
-  useEffect(() => { setRouted(false); setConfirmed(false); }, [selected]);
-  useEffect(() => onConfirm((p) => { if (p.status === "accepted") setConfirmed(true); }), []);
+  useEffect(() => { setRouted(false); setConfirmed(false); setPickups([]); }, [selected]);
+  useEffect(() => onConfirm((p) => {
+    if (p.status === "accepted") {
+      setConfirmed(true);
+      if (p.farmer) setPickups((prev) => [p.farmer!, ...prev].slice(0, 12));
+    }
+  }), []);
 
   function routeIt() {
     const best = d.matches[0];
@@ -43,6 +49,7 @@ export default function AdminConsole({
         id: `${selected}-${Date.now()}`, cropSlug: selected, cropNames: d.alert.cropNames,
         unitName: best.unitName, offer: best.offerPrice, crash: d.totals.crashPrice, farmers,
         productName: d.alert.productName, productPrice: d.alert.productPrice,
+        collectionPoint: d.alert.collectionPoint, unitPhone: d.alert.unitPhone,
         texts: d.alert.texts, ts: Date.now(), status: "pending",
       });
     }
@@ -102,11 +109,29 @@ export default function AdminConsole({
               <div className="mb-5">
                 <ValueChain crash={d.totals.crashPrice} offer={d.totals.offerPrice} productName={d.alert.productName} productPrice={d.alert.productPrice} cropSlug={d.alert.cropSlug} lang="en" />
               </div>
-              {confirmed && (
+              {pickups.length > 0 ? (
+                <div className="panel p-4 mb-4" style={{ borderColor: "var(--brand)" }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "var(--brand-deep)" }}>✓ Confirmed pickups ({pickups.length})</div>
+                    <div className="faint" style={{ fontSize: 11.5 }}>who to expect at the collection point</div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {pickups.map((f, i) => (
+                      <div key={i} className="flex items-center justify-between" style={{ fontSize: 13.5 }}>
+                        <span style={{ fontWeight: 600 }}>{f.name} <span className="faint" style={{ fontWeight: 400 }}>· {f.village}</span></span>
+                        <span className="mono" style={{ fontWeight: 600 }}>{f.tonnes} t</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="faint" style={{ fontSize: 12, marginTop: 10, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+                    Committed so far: <b style={{ color: "var(--brand-deep)" }}>{pickups.reduce((a, f) => a + f.tonnes, 0).toFixed(1)} t</b> — the FPO van routes through these villages.
+                  </div>
+                </div>
+              ) : confirmed ? (
                 <div className="panel p-3 mb-4" style={{ borderColor: "var(--brand)", color: "var(--brand-deep)", fontSize: 13, fontWeight: 600 }}>
                   ✓ A farmer just accepted — the deal is confirmed.
                 </div>
-              )}
+              ) : null}
               <SvgMap district={{ lat: d.detail.districtLat, lng: d.detail.districtLng, name: d.detail.district }} units={units} matched={d.matches} routed />
             </div>
           )}
