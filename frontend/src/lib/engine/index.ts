@@ -170,6 +170,19 @@ export function alertText(slug: string): AlertBundle | null {
   const prod = productValue(best.products || []);
   const unit = UNITS.find((u) => u.slug === best.unitSlug);
 
+  const isRising = c.series[c.series.length - 1].price >= c.series[0].price;
+  if (isRising) {
+    return {
+      cropSlug: c.slug, cropNames, unitName: best.unitName, offer, crash, productName: prod.name, productPrice: prod.price,
+      collectionPoint: unit?.collectionPoint ?? "", unitPhone: unit?.phone ?? "",
+      texts: {
+        en: `Good news! ${c.name} prices are rising (now ₹${crash}/kg). Demand is strong. ${best.unitName}, ${nearEn}, offers ₹${offer}/kg for premium stock.`,
+        hi: `अच्छी खबर! ${c.nameHi} के दाम बढ़ रहे हैं (अभी ₹${crash}/किलो)। मांग मजबूत है। ${best.unitName}, ${nearHi}, ₹${offer}/किलो का भाव दे रहा है।`,
+        kn: `ಶುಭ ಸುದ್ದಿ! ${c.nameKn} ಬೆಲೆ ಹೆಚ್ಚುತ್ತಿದೆ (ಈಗ ₹${crash}/ಕೆಜಿ). ಬೇಡಿಕೆ ಚೆನ್ನಾಗಿದೆ. ${best.unitName}, ${nearKn}, ₹${offer}/ಕೆಜಿ ನೀಡುತ್ತಿದೆ.`,
+      },
+    };
+  }
+
   return {
     cropSlug: c.slug, cropNames, unitName: best.unitName, offer, crash, productName: prod.name, productPrice: prod.price,
     collectionPoint: unit?.collectionPoint ?? "", unitPhone: unit?.phone ?? "",

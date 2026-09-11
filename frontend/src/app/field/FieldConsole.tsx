@@ -235,67 +235,101 @@ export default function FieldConsole({
         <main style={{ padding: "18px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
           
           {/* Mission Task Card */}
-          <div className="card p-4" style={{ borderLeft: "5px solid var(--brand)", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="pill" style={{ background: "#fef3c7", color: "#b45309", fontSize: 11, fontWeight: 700 }}>
-                🚨 ACTIVE TASK FROM APMC
-              </span>
-              <span style={{ fontWeight: 700, fontSize: 13, color: "var(--brand-deep)" }}>
-                {bookedCount} / {assignedFarmers.length} Contacted
-              </span>
-            </div>
-            
-            <h2 className="display" style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>
-              Alert {d.detail.name} Growers in Your Villages
-            </h2>
-            <p style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.5, marginTop: 4 }}>
-              Mandi price is crashing at ₹{d.alert.crash}/kg. <b>{d.alert.unitName}</b> will buy directly at <b style={{ color: "var(--brand-deep)" }}>₹{d.alert.offer}/kg</b>. Drop-off: <b>{d.alert.collectionPoint}</b>.
-            </p>
+          {(() => {
+            const isRising = d.detail.risk < 40;
+            return (
+              <div
+                className="card p-4"
+                style={{
+                  borderLeft: `5px solid ${isRising ? "var(--brand-deep)" : "var(--alarm)"}`,
+                  background: "#fff",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  {isRising ? (
+                    <span className="pill" style={{ background: "#dcfce7", color: "#166534", fontSize: 11, fontWeight: 700, border: "1px solid #86efac" }}>
+                      📈 MARKET ADVISORY: PRICES RISING
+                    </span>
+                  ) : (
+                    <span className="pill" style={{ background: "#fef3c7", color: "#b45309", fontSize: 11, fontWeight: 700 }}>
+                      🚨 ACTIVE DISTRESS ALERT FROM APMC
+                    </span>
+                  )}
+                  <span style={{ fontWeight: 700, fontSize: 13, color: "var(--brand-deep)" }}>
+                    {bookedCount} / {assignedFarmers.length} Contacted
+                  </span>
+                </div>
 
-            {/* Simple Progress Bar */}
-            <div style={{ height: 6, background: "var(--dash-bg)", borderRadius: 999, marginTop: 12, overflow: "hidden" }}>
-              <div style={{ width: `${assignedFarmers.length ? (bookedCount / assignedFarmers.length) * 100 : 0}%`, height: "100%", background: "var(--brand)", transition: "width 0.3s" }} />
-            </div>
-            <div className="flex items-center justify-between faint mt-2" style={{ fontSize: 11.5 }}>
-              <span>{totalTonnes.toFixed(1)} tonnes confirmed for pickup van</span>
-              <span>Village FPO Hub</span>
-            </div>
+                <h2 className="display" style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>
+                  {isRising ? `Advise ${d.detail.name} Growers on Peak Prices` : `Alert ${d.detail.name} Growers in Your Villages`}
+                </h2>
+                <p style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.5, marginTop: 4 }}>
+                  {isRising ? (
+                    <>
+                      Mandi price is rising at <b>₹{d.alert.crash}/kg</b>. Advise farmers to sell directly at APMC for peak returns, or supply <b>{d.alert.unitName}</b> at <b style={{ color: "var(--brand-deep)" }}>₹{d.alert.offer}/kg</b> for processed chips/pickle.
+                    </>
+                  ) : (
+                    <>
+                      Mandi price is crashing at ₹{d.alert.crash}/kg. <b>{d.alert.unitName}</b> will buy directly at <b style={{ color: "var(--brand-deep)" }}>₹{d.alert.offer}/kg</b>. Drop-off: <b>{d.alert.collectionPoint}</b>.
+                    </>
+                  )}
+                </p>
 
-            {/* Crop Task Switcher */}
-            <div className="flex items-center gap-2 pt-3 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
-              <span className="faint" style={{ fontSize: 12, fontWeight: 600 }}>Active Crop Alert:</span>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {crops.map((c) => {
-                  const active = selectedCrop === c.slug;
-                  const cFarmers = farmersForCrop(c.slug, { role, partnerName: currentPartner.name });
-                  return (
-                    <button
-                      key={c.slug}
-                      onClick={() => setSelectedCrop(c.slug)}
-                      className="pill"
-                      style={{
-                        cursor: "pointer",
-                        border: active ? "1.5px solid var(--brand)" : "1px solid var(--border)",
-                        background: active ? "var(--brand)" : "var(--dash-bg)",
-                        color: active ? "#fff" : "var(--ink)",
-                        fontWeight: 600,
-                        fontSize: 12,
-                        padding: "5px 10px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 5,
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      <span>{c.slug === "tomato" ? "🍅" : c.slug === "onion" ? "🧅" : "🫘"}</span>
-                      <span>{c.name}</span>
-                      <span style={{ fontSize: 10.5, opacity: active ? 0.9 : 0.6 }}>({cFarmers.length})</span>
-                    </button>
-                  );
-                })}
+                {/* Simple Progress Bar */}
+                <div style={{ height: 6, background: "var(--dash-bg)", borderRadius: 999, marginTop: 12, overflow: "hidden" }}>
+                  <div style={{ width: `${assignedFarmers.length ? (bookedCount / assignedFarmers.length) * 100 : 0}%`, height: "100%", background: isRising ? "var(--brand-deep)" : "var(--brand)", transition: "width 0.3s" }} />
+                </div>
+                <div className="flex items-center justify-between faint mt-2" style={{ fontSize: 11.5 }}>
+                  <span>{totalTonnes.toFixed(1)} tonnes {isRising ? "advised" : "confirmed for pickup van"}</span>
+                  <span>Village FPO Hub</span>
+                </div>
+
+                {/* Crop Task Switcher */}
+                <div className="flex items-center gap-2 pt-3 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
+                  <span className="faint" style={{ fontSize: 12, fontWeight: 600 }}>Active Crop Alert:</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {crops.map((c) => {
+                      const active = selectedCrop === c.slug;
+                      const cFarmers = farmersForCrop(c.slug, { role, partnerName: currentPartner.name });
+                      const cRising = c.risk < 40;
+                      const emoji =
+                        c.slug === "tomato" ? "🍅" :
+                        c.slug === "onion" ? "🧅" :
+                        c.slug === "potato" ? "🥔" :
+                        c.slug === "chilli" ? "🌶️" : "🫘";
+                      return (
+                        <button
+                          key={c.slug}
+                          onClick={() => setSelectedCrop(c.slug)}
+                          className="pill"
+                          style={{
+                            cursor: "pointer",
+                            border: active ? "1.5px solid var(--brand)" : "1px solid var(--border)",
+                            background: active ? "var(--brand)" : "var(--dash-bg)",
+                            color: active ? "#fff" : "var(--ink)",
+                            fontWeight: 600,
+                            fontSize: 12,
+                            padding: "5px 10px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 5,
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <span>{emoji}</span>
+                          <span>{c.name}</span>
+                          <span style={{ fontSize: 10, opacity: active ? 0.95 : 0.7 }}>
+                            {cRising ? "▲" : "▼"} ({cFarmers.length})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Simple Farmer Task List */}
           <div>

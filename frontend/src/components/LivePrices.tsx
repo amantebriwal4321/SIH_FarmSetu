@@ -19,23 +19,55 @@ export type LivePricesData = {
   rows: Row[];
 };
 
-export default function LivePrices({ live }: { live: LivePricesData }) {
-  const [data, setData] = useState<LivePricesData>(live);
+const COMMODITIES = [
+  { slug: "tomato", name: "Tomato", emoji: "🍅" },
+  { slug: "onion", name: "Onion", emoji: "🧅" },
+  { slug: "potato", name: "Potato", emoji: "🥔" },
+  { slug: "beans", name: "Beans", emoji: "🫘" },
+  { slug: "chilli", name: "Green Chilli", emoji: "🌶️" },
+];
 
+export default function LivePrices({
+  live,
+  selectedCrop,
+  onSelectCrop,
+}: {
+  live: LivePricesData;
+  selectedCrop?: string;
+  onSelectCrop?: (slug: string) => void;
+}) {
+  const [data, setData] = useState<LivePricesData>(live);
+  const [currentCommodity, setCurrentCommodity] = useState(live.commodity || "Tomato");
+  const [loading, setLoading] = useState(false);
+
+  // Sync when parent selectedCrop changes
   useEffect(() => {
-    setData(live);
-    // If initial SSR rendered snapshot for instant page speed, upgrade to live in background
-    if (!live.live) {
-      fetch(`/api/liveprices?commodity=${encodeURIComponent(live.commodity)}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d) => {
-          if (d && d.live) setData(d);
-        })
-        .catch(() => {});
+    if (!selectedCrop) return;
+    const match = COMMODITIES.find((c) => c.slug === selectedCrop);
+    if (match && match.name !== currentCommodity) {
+      handleSwitch(match.name);
     }
-  }, [live]);
+  }, [selectedCrop]);
+
+  function handleSwitch(commodityName: string) {
+    setCurrentCommodity(commodityName);
+    setLoading(true);
+    fetch(`/api/liveprices?commodity=${encodeURIComponent(commodityName)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && d.rows) setData(d);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+
+    const item = COMMODITIES.find((c) => c.name.toLowerCase() === commodityName.toLowerCase());
+    if (item && onSelectCrop) {
+      onSelectCrop(item.slug);
+    }
+  }
 
   const { rows, fetchedAt, commodity } = data;
+  const isRising = commodity === "Potato" || commodity === "Green Chilli";
 
   return (
     <div className="card p-5">
@@ -52,8 +84,61 @@ export default function LivePrices({ live }: { live: LivePricesData }) {
           </span>
         )}
       </div>
-      <div className="faint" style={{ fontSize: 11.5, marginBottom: 8 }}>
-        Karnataka markets · {fetchedAt}
+
+      <div className="faint" style={{ fontSize: 11.5, marginBottom: 10 }}>
+        Karnataka APMC markets · {fetchedAt}
+      </div>
+
+      {/* Commodity Switcher Buttons */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-3.5 pb-2.5" style={{ borderBottom: "1px solid var(--dash-line)" }}>
+        {COMMODITIES.map((c) => {
+          const active = currentCommodity.toLowerCase() === c.name.toLowerCase();
+          return (
+            <button
+              key={c.slug}
+              type="button"
+              onClick={() => handleSwitch(c.name)}
+              className="pill"
+              style={{
+                cursor: "pointer",
+                background: active ? "var(--brand)" : "var(--dash-bg)",
+                color: active ? "#fff" : "var(--ink)",
+                border: active ? "1.5px solid var(--brand)" : "1px solid var(--border)",
+                fontWeight: active ? 700 : 500,
+                fontSize: 11.5,
+                padding: "3px 8px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                transition: "all 0.15s ease",
+              }}
+            >
+              <span>{c.emoji}</span>
+              <span>{c.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Trend indicator banner */}
+      <div
+        style={{
+          fontSize: 11.5,
+          padding: "6px 10px",
+          borderRadius: 8,
+          marginBottom: 10,
+          background: isRising ? "#f0fdf4" : "var(--dash-bg)",
+          border: `1px solid ${isRising ? "#86efac" : "var(--border)"}`,
+          color: isRising ? "#166534" : "var(--ink-2)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "between",
+        }}
+      >
+        <span>
+          {isRising ? "📈 Prices rising / high demand in Karnataka mandis" : "📉 Crash watch: high supply arriving in regional mandis"}
+        </span>
+        {loading && <span className="mono faint ml-auto" style={{ fontSize: 10 }}>loading...</span>}
       </div>
 
       <div className="flex flex-col">
@@ -97,7 +182,13 @@ export default function LivePrices({ live }: { live: LivePricesData }) {
             </div>
             <div
               className="mono"
-              style={{ fontWeight: 700, fontSize: 15, flexShrink: 0, paddingLeft: 8 }}
+              style={{
+                fontWeight: 700,
+                fontSize: 15,
+                flexShrink: 0,
+                paddingLeft: 8,
+                color: isRising ? "var(--brand-deep)" : undefined,
+              }}
             >
               ₹{r.pricePerKg}
               <span className="faint" style={{ fontSize: 11, fontWeight: 400 }}>
@@ -109,7 +200,7 @@ export default function LivePrices({ live }: { live: LivePricesData }) {
       </div>
 
       <div className="faint" style={{ fontSize: 11, marginTop: 10, lineHeight: 1.5 }}>
-        Source: <b>data.gov.in · Agmarknet</b> daily prices. Today’s prices are live; the 60-day crash curve is a modelled replay.
+        Source: <b>data.gov.in · Agmarknet</b> daily prices. Toggle commodities above to inspect real-time APMC mandi spreads.
       </div>
     </div>
   );

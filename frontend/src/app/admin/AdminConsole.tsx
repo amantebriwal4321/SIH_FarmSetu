@@ -42,8 +42,10 @@ export default function AdminConsole({
   const [toast, setToast] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [pickups, setPickups] = useState<PickupFarmer[]>([]);
+  const [cropFilter, setCropFilter] = useState<"all" | "risk" | "rising">("all");
 
-  const d = details[selected];
+  const d = details[selected] || details[crops[0]?.slug];
+  const isRising = d.detail.risk < 40;
   const targets = alertTargets(selected);
   const farmers = targets.count;
   const topVillages = targets.byVillage.slice(0, 3).map((v) => v.village).join(", ");
@@ -87,6 +89,12 @@ export default function AdminConsole({
   const farmerUrl = `${qrBase}/farmer?crop=${selected}&auto=1`;
   const fieldUrl = `${qrBase}/field?crop=${selected}`;
 
+  const displayedCrops = crops.filter((c) => {
+    if (cropFilter === "risk") return c.risk >= 40;
+    if (cropFilter === "rising") return c.risk < 40;
+    return true;
+  });
+
   return (
     <DashShell title="Overview" subtitle="Spot a crop about to crash, then route the surplus before it’s dumped." active="overview">
       {/* KPIs */}
@@ -108,23 +116,48 @@ export default function AdminConsole({
                 <span className="pill" style={{ fontSize: 11, background: "rgba(22,101,52,0.08)", color: "var(--brand-deep)" }}>
                   AgriStack: {num(farmers)} growers
                 </span>
+                {isRising && (
+                  <span className="badge badge-stable" style={{ fontSize: 11 }}>
+                    📈 Market Rising
+                  </span>
+                )}
               </div>
-              {!routed
-                ? <button className="btn btn-primary" onClick={routeIt}>Alert farmers & route surplus →</button>
-                : <button className="btn" onClick={() => setRouted(false)}>Reset</button>}
+              {!routed ? (
+                <button className="btn btn-primary" onClick={routeIt}>
+                  {isRising ? "Broadcast market advisory →" : "Alert farmers & route surplus →"}
+                </button>
+              ) : (
+                <button className="btn" onClick={() => setRouted(false)}>Reset</button>
+              )}
             </div>
 
             <PriceDrop were={d.detail.series[0].price} now={d.detail.latestPrice} risk={d.detail.risk} />
 
             {!routed ? (
               <p style={{ fontSize: 15.5, marginTop: 18, lineHeight: 1.6 }}>
-                <b>{num(d.detail.surplusTonnes)} t</b> of {d.detail.name.toLowerCase()} is about to be dumped.
-                Routing it now saves about <b style={{ color: "var(--brand-deep)" }}>{inr(d.totals.rupeesSaved)}</b> and
-                targets <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} via AgriStack crop-sown records.
+                {isRising ? (
+                  <>
+                    <b>Prices are rising</b> for {d.detail.name.toLowerCase()} (now ₹{d.detail.latestPrice}/kg). Market demand is strong. AgriStack crop-sown records target <b>{num(farmers)} growers</b> across {topVillages} to receive peak rate guidance and FPO processing links.
+                  </>
+                ) : (
+                  <>
+                    <b>{num(d.detail.surplusTonnes)} t</b> of {d.detail.name.toLowerCase()} is about to be dumped.
+                    Routing it now saves about <b style={{ color: "var(--brand-deep)" }}>{inr(d.totals.rupeesSaved)}</b> and
+                    targets <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} via AgriStack crop-sown records.
+                  </>
+                )}
               </p>
             ) : (
               <p style={{ fontSize: 15.5, marginTop: 18, lineHeight: 1.6 }}>
-                Dispatched to field tier. <b>{num(d.totals.tonnesMatched)} t</b> routed to <b>{d.totals.unitsEngaged}</b> units at <b style={{ color: "var(--brand-deep)" }}>₹{d.totals.offerPrice}/kg</b>. <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} alerted through Krishi Sakhis, CSC VLEs, and FPOs.
+                {isRising ? (
+                  <>
+                    Market intelligence dispatched to field tier. <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} reached through Krishi Sakhis to capitalize on peak prices.
+                  </>
+                ) : (
+                  <>
+                    Dispatched to field tier. <b>{num(d.totals.tonnesMatched)} t</b> routed to <b>{d.totals.unitsEngaged}</b> units at <b style={{ color: "var(--brand-deep)" }}>₹{d.totals.offerPrice}/kg</b>. <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} alerted through Krishi Sakhis, CSC VLEs, and FPOs.
+                  </>
+                )}
               </p>
             )}
           </div>
@@ -140,7 +173,7 @@ export default function AdminConsole({
               </div>
               {!routed ? (
                 <button className="btn btn-primary" onClick={routeIt}>
-                  📡 Dispatch {d.detail.name} Alert ({num(farmers)} growers) →
+                  📡 {isRising ? "Send" : "Dispatch"} {d.detail.name} {isRising ? "Advisory" : "Alert"} ({num(farmers)} growers) →
                 </button>
               ) : (
                 <span className="badge badge-stable" style={{ fontSize: 12, padding: "5px 12px" }}>
@@ -263,25 +296,81 @@ export default function AdminConsole({
         {/* right column */}
         <div className="flex flex-col gap-5">
           <div className="card p-5">
-            <div className="eyebrow mb-3">At-risk crops · pick one</div>
-            <div className="flex flex-col gap-1">
-              {crops.map((c) => (
-                <button key={c.slug} onClick={() => setSelected(c.slug)} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-left"
-                  style={{ background: selected === c.slug ? "var(--dash-bg)" : "transparent", border: "none", cursor: "pointer" }}>
-                  <div className="flex items-center gap-3">
-                    <div className="kpi-num" style={{ fontSize: 20, color: riskColor(c.label), width: 34 }}>{Math.round(c.risk)}</div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{c.name}</div>
-                      <div className="faint" style={{ fontSize: 12 }}>₹{c.latestPrice}/kg</div>
-                    </div>
-                  </div>
-                  <RiskBadge label={c.label} />
+            <div className="flex items-center justify-between mb-2">
+              <div className="eyebrow">Commodity Tracker · Pick One</div>
+              <span className="mono faint" style={{ fontSize: 11 }}>{displayedCrops.length} crops</span>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+              {[
+                { id: "all", label: `All (${crops.length})` },
+                { id: "risk", label: `⚠️ At Risk (${crops.filter((c) => c.risk >= 40).length})` },
+                { id: "rising", label: `📈 Rising (${crops.filter((c) => c.risk < 40).length})` },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setCropFilter(tab.id as "all" | "risk" | "rising")}
+                  className="pill"
+                  style={{
+                    cursor: "pointer",
+                    fontSize: 11,
+                    padding: "3px 8px",
+                    background: cropFilter === tab.id ? "var(--ink)" : "var(--dash-bg)",
+                    color: cropFilter === tab.id ? "#fff" : "var(--ink)",
+                    border: "none",
+                    fontWeight: 600,
+                  }}
+                >
+                  {tab.label}
                 </button>
               ))}
             </div>
+
+            <div className="flex flex-col gap-1">
+              {displayedCrops.map((c) => {
+                const cRising = c.risk < 40;
+                const emoji =
+                  c.slug === "tomato" ? "🍅" :
+                  c.slug === "onion" ? "🧅" :
+                  c.slug === "potato" ? "🥔" :
+                  c.slug === "chilli" ? "🌶️" : "🫘";
+
+                return (
+                  <button
+                    key={c.slug}
+                    onClick={() => setSelected(c.slug)}
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-left"
+                    style={{
+                      background: selected === c.slug ? "var(--dash-bg)" : "transparent",
+                      border: selected === c.slug ? "1px solid var(--border)" : "1px solid transparent",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span style={{ fontSize: 20 }}>{emoji}</span>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{c.name}</div>
+                        <div className="faint" style={{ fontSize: 12 }}>
+                          ₹{c.latestPrice}/kg {cRising ? <span style={{ color: "#166534", fontWeight: 600 }}>▲ rising</span> : null}
+                        </div>
+                      </div>
+                    </div>
+                    {cRising ? (
+                      <span className="badge badge-stable" style={{ fontSize: 10, padding: "2px 8px", background: "#dcfce7", color: "#166534" }}>
+                        ▲ RISING
+                      </span>
+                    ) : (
+                      <RiskBadge label={c.label} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <LivePrices live={live} />
+          <LivePrices live={live} selectedCrop={selected} onSelectCrop={(slug) => setSelected(slug)} />
 
           <div className="card p-5">
             <div className="flex items-center justify-between mb-2">
