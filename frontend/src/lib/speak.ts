@@ -43,6 +43,18 @@ export function speak(text: string, lang = "hi-IN", onEnd?: () => void) {
   }
 }
 
+export function pauseSpeak() {
+  if (canSpeak()) window.speechSynthesis.pause();
+}
+
+export function resumeSpeak() {
+  if (canSpeak()) window.speechSynthesis.resume();
+}
+
+export function isSpeaking() {
+  return canSpeak() && window.speechSynthesis.speaking;
+}
+
 export function stopSpeak() {
   if (canSpeak()) window.speechSynthesis.cancel();
 }
