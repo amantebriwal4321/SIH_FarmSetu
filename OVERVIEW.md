@@ -64,7 +64,10 @@ A four-step loop:
 2. **Route** — match the surplus to the **nearest processing units** by distance and capacity.
 3. **Alert** — the farmer's phone **rings and speaks the offer** in their language (voice + SMS) —
    no app, no reading.
-4. **Confirm** — the farmer taps accept → the officer sees it confirmed → the crop is saved.
+4. **Confirm** — the farmer **presses 1** on any phone (or taps in the smartphone app) → the "yes" is
+   recorded and the **unit is notified** → the officer sees it confirmed → the farmer brings the crop
+   to the unit (via their FPO / a village aggregation point), which makes paste and **pays ₹9/kg**.
+   The app makes the match and captures the commitment; it never moves the crop itself.
 
 The crop that would rot (**agriculture**) becomes a product that lasts (**food processing**) made by
 rural women earning money (**rural development**) — all three theme parts in one system.
@@ -138,9 +141,10 @@ A single Next.js web app, four routes:
 - **`/admin` Officer console** — a clean dashboard: KPI cards, the at-risk crop list with a 0–100
   score, a plain price read (₹18 → ₹3.82, ▼79%), one action ("Alert farmers & route surplus"), and
   after routing: impact numbers + a clear map (mandi → units with tonnes) + a **QR code**.
-- **`/farmer` Farmer app** — a real phone app: a **full-screen incoming call** that **speaks the
-  alert** in English / Hindi / Kannada, big Accept / Not now, then a "Booked" confirmation. Installable
-  (Add to Home Screen).
+- **`/farmer` Farmer app** — a full-screen **incoming call** that **speaks the alert** in English /
+  Hindi / Kannada, then a "Booked" confirmation. **Two modes:** *Basic phone* (the default) shows the
+  realistic keypad-phone experience — the farmer **presses 1 to accept / 2 to decline**, works on any
+  ₹800 phone, no app; *Smartphone* shows the richer tap-to-accept app for the minority who have one.
 
 **Live handshake (no backend):** route a crop on the officer console → the farmer phone rings and
 speaks; the farmer accepts → the officer sees it confirmed. Cross-device via a **QR** the farmer scans.

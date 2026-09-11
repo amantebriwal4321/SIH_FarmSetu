@@ -69,9 +69,28 @@ right now," which is honest and defensible. A judge can read exactly how the num
 ## 5. "Most farmers have no smartphone and can't read. How do they use it?"
 
 **The farmer never opens an app.** They get a phone call that *speaks* the offer in their own
-language (English / Hindi / Kannada), plus an SMS — works on a ₹800 keypad phone. The complex
-dashboard is for the officer, not the farmer. Adoption goes through the FPO/SHG and the
-village-level worker, which is how rural tech actually spreads.
+language (English / Hindi / Kannada), plus an SMS — works on a ₹800 keypad phone. On the call they
+simply **press 1 to accept, 2 to decline** — a keypad press, no reading, no smartphone. (The demo
+shows this as the default "Basic phone" mode; a richer smartphone-app view is there too, for the
+minority who have one.) The complex dashboard is for the officer, not the farmer. Adoption goes
+through the FPO/SHG and the village-level worker, which is how rural tech actually spreads.
+
+---
+
+## 5b. "Who accepts, what gets stored, and how does the crop actually reach the unit?"
+
+**We push the offer; the farmer sends back a yes; the crop follows.** In plain steps:
+- **We provide** the offer — a call/SMS the system *sends* to the farmer (not the farmer searching for it).
+- **The farmer decides** — presses **1 to accept**, **2 to decline**. That's the only input from them.
+- **On accept, the "yes" is recorded** and the **unit is notified** to expect the supply. (In the demo
+  that's the officer console flipping to "confirmed"; in production it's a saved record + a message to
+  the unit.)
+- **The crop moves via the FPO / a village aggregation point** — the farmer brings it (or the FPO/unit
+  arranges pickup) to the processing unit, which turns it into paste and **pays ₹9/kg**.
+
+**The app makes the match and captures the commitment — it never moves the crop itself.** Logistics
+(aggregation, transport) is the FPO/unit's existing job; we just connect the right farmer to the right
+unit at the right moment.
 
 ---
 
