@@ -176,6 +176,19 @@ export default function AdminConsole({
 
           <LivePrices live={live} />
 
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="eyebrow">Field Outreach Network</div>
+              <span className="badge badge-stable">3 Schemes Active</span>
+            </div>
+            <p className="faint" style={{ fontSize: 12.5, lineHeight: 1.45, marginBottom: 12 }}>
+              Krishi Sakhis, CSC kiosks, and FPOs receive village rosters to alert farmers in person.
+            </p>
+            <Link href={fieldUrl} className="btn w-full" style={{ fontSize: 12.5, display: "inline-flex", justifyContent: "center" }}>
+              Open Field Worker Console (/field) →
+            </Link>
+          </div>
+
           {routed && (
             <div className="card p-5 flex flex-col items-center text-center">
               <div className="eyebrow" style={{ alignSelf: "flex-start" }}>Deliver to a farmer’s phone</div>

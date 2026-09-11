@@ -2,12 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import DashShell from "@/components/dash/DashShell";
-import KpiCard from "@/components/dash/KpiCard";
-import RiskBadge from "@/components/RiskBadge";
-import Toast from "@/components/Toast";
-import QRCodeView from "@/components/QRCodeView";
-import RegistryUpload from "@/components/RegistryUpload";
 import {
   sendDispatch,
   onDispatch,
@@ -17,8 +11,6 @@ import {
   type PickupFarmer,
 } from "@/lib/dispatch";
 import {
-  inr,
-  num,
   farmersForCrop,
   partnersByRole,
   FIELD_PARTNERS,
@@ -33,6 +25,8 @@ import {
 } from "@/lib/engine";
 import { speak, stopSpeak } from "@/lib/speak";
 import { STR, loadLang, type Lang } from "@/lib/i18n";
+import Toast from "@/components/Toast";
+import RegistryUpload from "@/components/RegistryUpload";
 
 type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle };
 
@@ -40,8 +34,6 @@ export default function FieldConsole({
   crops,
   details,
   overview,
-  qrBase,
-  isLan,
 }: {
   crops: CropSummary[];
   details: Record<string, Detail>;
@@ -55,7 +47,8 @@ export default function FieldConsole({
   const [activeDispatch, setActiveDispatch] = useState<Dispatch | null>(null);
   const [bookedFarmers, setBookedFarmers] = useState<Record<string, { tonnes: number; method: string }>>({});
   const [toast, setToast] = useState<string>("");
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("kn"); // default to local Kannada for field partner
+  const [showDemoTools, setShowDemoTools] = useState<boolean>(false);
 
   useEffect(() => {
     setLang(loadLang());
@@ -79,7 +72,7 @@ export default function FieldConsole({
     return onDispatch((d) => {
       setActiveDispatch(d);
       if (d.cropSlug) setSelectedCrop(d.cropSlug);
-      setToast(`New alert received: ${d.cropNames.en} price crash routed!`);
+      setToast(`🚨 New Task Assigned: ${d.cropNames.en} price crash alert in your villages!`);
     });
   }, []);
 
@@ -141,226 +134,134 @@ export default function FieldConsole({
     if (method === "call") {
       const msg = d.alert.texts[lang] || d.alert.texts.en;
       speak(msg, lang);
-      setToast(`Calling ${farmer.name} (${farmer.phone}) · Playing offer ₹${d.alert.offer}/kg`);
+      setToast(`📞 Calling ${farmer.name}... Spoke offer ₹${d.alert.offer}/kg`);
     } else if (method === "visited") {
-      setToast(`Marked ${farmer.name} visited in ${farmer.village} · ${estTonnes} t booked`);
+      setToast(`🚶 Marked ${farmer.name} visited in ${farmer.village}`);
     } else {
-      setToast(`${farmer.name} booked in person at center · ${estTonnes} t allocated`);
+      setToast(`🏢 ${farmer.name} booked in-person at center`);
     }
   };
 
-  const totalBookedTonnes = Object.values(bookedFarmers).reduce((a, b) => a + b.tonnes, 0);
   const bookedCount = Object.keys(bookedFarmers).length;
+  const totalTonnes = Object.values(bookedFarmers).reduce((a, b) => a + b.tonnes, 0);
 
   return (
-    <DashShell
-      title="Field Partner Console"
-      subtitle="The human bridge: Krishi Sakhis, CSC VLEs, and FPOs reaching farmers without smartphones."
-      active="field"
-    >
-      {/* Role Selection Tabs */}
-      <section className="card p-5 mb-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="eyebrow mb-1">Human Middle Layer · Select Operating Model</div>
-            <div className="flex flex-wrap gap-2">
+    <div style={{ minHeight: "100vh", background: "var(--dash-bg)", display: "flex", justifyContent: "center" }}>
+      <div style={{ width: "100%", maxWidth: 640, background: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", boxShadow: "0 0 30px rgba(0,0,0,0.05)" }}>
+        
+        {/* Simple Mobile-Friendly Header */}
+        <header style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", position: "sticky", top: 0, zIndex: 30 }}>
+          <div className="flex items-center gap-3">
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--brand-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
+              {role === "krishi_sakhi" ? "👩‍🌾" : role === "vle" ? "🏢" : "🤝"}
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)" }}>{currentPartner.name}</div>
+              <div className="faint" style={{ fontSize: 12 }}>
+                {role === "krishi_sakhi" ? "Krishi Sakhi (KSCP)" : role === "vle" ? "CSC VLE Center" : "FPO Coordinator"} · {currentPartner.villages.join(", ")}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDemoTools(!showDemoTools)}
+              className="pill"
+              style={{ fontSize: 11, cursor: "pointer", background: showDemoTools ? "var(--brand)" : "var(--dash-bg)", color: showDemoTools ? "#fff" : "var(--ink-2)", border: "1px solid var(--border)" }}
+              title="Switch demo worker profile for presentation"
+            >
+              Demo Profile ▾
+            </button>
+            <Link href="/admin" className="pill" style={{ fontSize: 11 }}>
+              Officer →
+            </Link>
+          </div>
+        </header>
+
+        {/* Demo Switcher Drawer (Hidden by default for simplicity, openable on stage) */}
+        {showDemoTools && (
+          <div style={{ padding: "14px 20px", background: "var(--dash-bg)", borderBottom: "1px solid var(--border)", fontSize: 13 }}>
+            <div className="flex items-center justify-between mb-2">
+              <span style={{ fontWeight: 600, fontSize: 12 }}>Switch Presentation Persona:</span>
+              <button onClick={() => setShowDemoTools(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12 }} className="faint">✕ close</button>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-3">
               <button
                 onClick={() => handleRoleChange("krishi_sakhi")}
                 className="btn"
-                style={{
-                  background: role === "krishi_sakhi" ? "var(--brand)" : "var(--dash-bg)",
-                  color: role === "krishi_sakhi" ? "#fff" : "var(--ink)",
-                  borderColor: role === "krishi_sakhi" ? "var(--brand)" : "var(--dash-line)",
-                  fontWeight: 600,
-                  fontSize: 13.5,
-                }}
+                style={{ fontSize: 11.5, padding: "4px 8px", background: role === "krishi_sakhi" ? "var(--brand)" : "#fff", color: role === "krishi_sakhi" ? "#fff" : "var(--ink)" }}
               >
-                👩‍🌾 Krishi Sakhi (KSCP)
+                Krishi Sakhi
               </button>
               <button
                 onClick={() => handleRoleChange("vle")}
                 className="btn"
-                style={{
-                  background: role === "vle" ? "var(--brand)" : "var(--dash-bg)",
-                  color: role === "vle" ? "#fff" : "var(--ink)",
-                  borderColor: role === "vle" ? "var(--brand)" : "var(--dash-line)",
-                  fontWeight: 600,
-                  fontSize: 13.5,
-                }}
+                style={{ fontSize: 11.5, padding: "4px 8px", background: role === "vle" ? "var(--brand)" : "#fff", color: role === "vle" ? "#fff" : "var(--ink)" }}
               >
-                🏢 CSC VLE Center
+                CSC VLE
               </button>
               <button
                 onClick={() => handleRoleChange("fpo")}
                 className="btn"
-                style={{
-                  background: role === "fpo" ? "var(--brand)" : "var(--dash-bg)",
-                  color: role === "fpo" ? "#fff" : "var(--ink)",
-                  borderColor: role === "fpo" ? "var(--brand)" : "var(--dash-line)",
-                  fontWeight: 600,
-                  fontSize: 13.5,
-                }}
+                style={{ fontSize: 11.5, padding: "4px 8px", background: role === "fpo" ? "var(--brand)" : "#fff", color: role === "fpo" ? "#fff" : "var(--ink)" }}
               >
-                🤝 FPO Coordinator
+                FPO Coordinator
               </button>
             </div>
-          </div>
-
-          {/* Assigned Partner dropdown */}
-          <div className="flex flex-col gap-1 min-w-[240px]">
-            <span className="faint" style={{ fontSize: 12 }}>
-              Active {role === "krishi_sakhi" ? "Para-Worker" : role === "vle" ? "VLE Agent" : "Coordinator"}
-            </span>
             <select
               value={currentPartner.id}
               onChange={(e) => handlePartnerChange(e.target.value)}
-              className="select"
-              style={{
-                padding: "8px 12px",
-                borderRadius: 8,
-                border: "1px solid var(--border)",
-                background: "#fff",
-                fontWeight: 600,
-                fontSize: 13.5,
-              }}
+              style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid var(--border)", fontSize: 12, background: "#fff" }}
             >
               {availablePartners.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.villages.join(", ")})
-                </option>
+                <option key={p.id} value={p.id}>{p.name} ({p.villages.join(", ")})</option>
               ))}
             </select>
           </div>
-        </div>
+        )}
 
-        {/* Scheme explanation banner */}
-        <div
-          className="panel p-3 mt-4"
-          style={{
-            background: "rgba(22, 101, 52, 0.04)",
-            borderColor: "rgba(22, 101, 52, 0.2)",
-            fontSize: 13,
-            lineHeight: 1.5,
-          }}
-        >
-          {role === "krishi_sakhi" && (
-            <span>
-              <b>Krishi Sakhi Convergence Programme (KSCP)</b>: MoA&FW + MoRD initiative (70,000 certified women para-extension workers, Karnataka in Phase 1). Equipped with the crop-sown registry to visit marginal farmers directly.
-            </span>
-          )}
-          {role === "vle" && (
-            <span>
-              <b>CSC Village Level Entrepreneurs</b>: 5+ lakh Common Service Centers across rural India. Serves as walk-in touchpoints where smallholders without smartphones verify their mandi alerts.
-            </span>
-          )}
-          {role === "fpo" && (
-            <span>
-              <b>10,000 FPO Scheme</b>: Coordinates village collection hubs and van routing directly to PMFME processing units.
-            </span>
-          )}
-        </div>
-      </section>
-
-      {/* KPIs */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        <KpiCard
-          filled
-          label="Assigned Farmers"
-          value={String(assignedFarmers.length)}
-          caption={`${d.detail.name} growers in ${currentPartner.villages.length} villages`}
-        />
-        <KpiCard
-          label="Coverage Area"
-          value={String(currentPartner.villages.length) + " villages"}
-          caption={currentPartner.villages.slice(0, 3).join(", ")}
-        />
-        <KpiCard
-          label="Booked Farmers"
-          value={`${bookedCount} / ${assignedFarmers.length}`}
-          caption="via call, field visit, or center"
-        />
-        <KpiCard
-          label="Committed Volume"
-          value={`${totalBookedTonnes.toFixed(1)} t`}
-          caption="ready for collection van"
-        />
-      </section>
-
-      {/* Main workspace */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left 2 Cols: Incoming order banner + Farmer Roster */}
-        <div className="lg:col-span-2 flex flex-col gap-5">
-          {/* Active Dispatch Banner */}
-          <div
-            className="card p-5"
-            style={{
-              borderLeft: "5px solid var(--brand)",
-              background: "#fff",
-            }}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <span className="pill" style={{ background: "var(--brand)", color: "#fff", fontSize: 11 }}>
-                  DISPATCHED FROM OFFICER
-                </span>
-                <h3 className="display" style={{ fontSize: 18, fontWeight: 700 }}>
-                  {d.detail.name} Surplus Route
-                </h3>
-              </div>
-              <RiskBadge label={d.detail.label} />
+        <main style={{ padding: "18px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+          
+          {/* Mission Task Card */}
+          <div className="card p-4" style={{ borderLeft: "5px solid var(--brand)", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="pill" style={{ background: "#fef3c7", color: "#b45309", fontSize: 11, fontWeight: 700 }}>
+                🚨 ACTIVE TASK FROM APMC
+              </span>
+              <span style={{ fontWeight: 700, fontSize: 13, color: "var(--brand-deep)" }}>
+                {bookedCount} / {assignedFarmers.length} Contacted
+              </span>
             </div>
-
-            <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.5 }}>
-              Officer routed surplus to <b>{d.alert.unitName || "Processing Unit"}</b> paying{" "}
-              <b style={{ color: "var(--brand-deep)" }}>₹{d.alert.offer}/kg</b> (vs Mandi crash of ₹{d.alert.crash}/kg). Collection point:{" "}
-              <b>{d.alert.collectionPoint || "Village FPO Hub"}</b>.
+            
+            <h2 className="display" style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>
+              Alert {d.detail.name} Growers in Your Villages
+            </h2>
+            <p style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.5, marginTop: 4 }}>
+              Mandi price is crashing at ₹{d.alert.crash}/kg. <b>{d.alert.unitName}</b> will buy directly at <b style={{ color: "var(--brand-deep)" }}>₹{d.alert.offer}/kg</b>. Drop-off: <b>{d.alert.collectionPoint}</b>.
             </p>
 
-            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
-              <span className="faint" style={{ fontSize: 12 }}>Filter by crop:</span>
-              {crops.map((c) => (
-                <button
-                  key={c.slug}
-                  onClick={() => setSelectedCrop(c.slug)}
-                  className="pill"
-                  style={{
-                    cursor: "pointer",
-                    border: selectedCrop === c.slug ? "1px solid var(--brand)" : "1px solid var(--border)",
-                    background: selectedCrop === c.slug ? "var(--brand)" : "transparent",
-                    color: selectedCrop === c.slug ? "#fff" : "var(--ink)",
-                    fontSize: 12,
-                  }}
-                >
-                  {c.name}
-                </button>
-              ))}
+            {/* Simple Progress Bar */}
+            <div style={{ height: 6, background: "var(--dash-bg)", borderRadius: 999, marginTop: 12, overflow: "hidden" }}>
+              <div style={{ width: `${assignedFarmers.length ? (bookedCount / assignedFarmers.length) * 100 : 0}%`, height: "100%", background: "var(--brand)", transition: "width 0.3s" }} />
+            </div>
+            <div className="flex items-center justify-between faint mt-2" style={{ fontSize: 11.5 }}>
+              <span>{totalTonnes.toFixed(1)} tonnes confirmed for pickup van</span>
+              <span>Village FPO Hub</span>
             </div>
           </div>
 
-          {/* Farmer Roster */}
-          <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="display" style={{ fontSize: 18, fontWeight: 700 }}>
-                  AgriStack Target Roster ({assignedFarmers.length})
-                </h2>
-                <div className="faint" style={{ fontSize: 12 }}>
-                  Verified growers with sowed {d.detail.name.toLowerCase()} plots under {currentPartner.name}
-                </div>
+          {/* Simple Farmer Task List */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ink)" }}>
+                Your Assigned Farmers ({assignedFarmers.length})
               </div>
-              <a
-                href="/data/farmers.csv"
-                download="farmers.csv"
-                className="link"
-                style={{ fontSize: 12 }}
-              >
-                📥 Download AgriStack CSV
-              </a>
+              <span className="faint" style={{ fontSize: 12 }}>Tap an action below to update</span>
             </div>
 
             {assignedFarmers.length === 0 ? (
               <div className="panel p-6 text-center faint">
-                No farmers registered for {d.detail.name} in this partner&apos;s covered villages ({currentPartner.villages.join(", ")}).
+                No {d.detail.name} farmers registered in your covered villages ({currentPartner.villages.join(", ")}).
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -370,51 +271,85 @@ export default function FieldConsole({
                   return (
                     <div
                       key={f.farmerId}
-                      className="panel p-3.5 flex flex-wrap items-center justify-between gap-3"
+                      className="card p-3.5 flex flex-col gap-2.5"
                       style={{
                         background: booked ? "#f0fdf4" : "#fff",
-                        borderColor: booked ? "#86efac" : "var(--dash-line)",
+                        borderColor: booked ? "#86efac" : "var(--border)",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.02)",
                       }}
                     >
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-2">
-                          <span style={{ fontWeight: 700, fontSize: 14 }}>{f.name}</span>
-                          <span className="mono faint" style={{ fontSize: 11, background: "var(--dash-bg)", padding: "1px 5px", borderRadius: 4 }}>
-                            {f.farmerId}
-                          </span>
-                          {booked && (
-                            <span className="pill" style={{ fontSize: 10.5, background: "var(--brand)", color: "#fff", padding: "2px 6px" }}>
-                              ✓ Booked ({booked.method === "center" ? "Center" : booked.method === "visited" ? "Visited" : "Call"})
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span style={{ fontWeight: 700, fontSize: 15 }}>{f.name}</span>
+                            <span className="mono faint" style={{ fontSize: 11, background: "var(--dash-bg)", padding: "1px 5px", borderRadius: 4 }}>
+                              {f.farmerId}
                             </span>
-                          )}
+                          </div>
+                          <div className="faint" style={{ fontSize: 12.5, marginTop: 2 }}>
+                            📍 {f.village} · {f.plotAcres} acres · ~{estTonnes} t tomatoes
+                          </div>
                         </div>
-                        <div className="faint" style={{ fontSize: 12 }}>
-                          📍 {f.village} · {f.plotAcres} acres · ~{estTonnes} t harvest · 📞 {f.phone}
-                        </div>
+
+                        {booked ? (
+                          <span className="pill" style={{ background: "var(--brand)", color: "#fff", fontSize: 11, fontWeight: 700 }}>
+                            ✓ {booked.method === "center" ? "At Center" : booked.method === "visited" ? "Visited" : "Called"} ({booked.tonnes} t)
+                          </span>
+                        ) : (
+                          <span className="pill faint" style={{ fontSize: 11 }}>
+                            Pending
+                          </span>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      {/* 3 Simple Action Buttons */}
+                      <div className="grid grid-cols-3 gap-2 mt-1">
                         <button
                           onClick={() => handleFarmerAction(f, "call")}
                           className="btn"
-                          style={{ fontSize: 12, padding: "6px 10px" }}
-                          title="Trigger automated audio call"
+                          style={{
+                            fontSize: 12,
+                            padding: "8px 6px",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: 4,
+                            background: booked?.method === "call" ? "var(--brand)" : "var(--dash-bg)",
+                            color: booked?.method === "call" ? "#fff" : "var(--ink)",
+                          }}
                         >
                           📞 Call
                         </button>
                         <button
                           onClick={() => handleFarmerAction(f, "visited")}
                           className="btn"
-                          style={{ fontSize: 12, padding: "6px 10px" }}
-                          title="Mark visited in person"
+                          style={{
+                            fontSize: 12,
+                            padding: "8px 6px",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: 4,
+                            background: booked?.method === "visited" ? "var(--brand)" : "var(--dash-bg)",
+                            color: booked?.method === "visited" ? "#fff" : "var(--ink)",
+                          }}
                         >
                           🚶 Visited
                         </button>
                         <button
                           onClick={() => handleFarmerAction(f, "center")}
-                          className="btn btn-primary"
-                          style={{ fontSize: 12, padding: "6px 10px" }}
-                          title="Walk-in at center"
+                          className="btn"
+                          style={{
+                            fontSize: 12,
+                            padding: "8px 6px",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: 4,
+                            background: booked?.method === "center" ? "var(--brand)" : "var(--brand-bg)",
+                            color: booked?.method === "center" ? "#fff" : "var(--brand-deep)",
+                            fontWeight: 600,
+                          }}
                         >
                           🏢 At Center
                         </button>
@@ -425,57 +360,18 @@ export default function FieldConsole({
               </div>
             )}
           </div>
-        </div>
+        </main>
 
-        {/* Right Col: Delivery Link, QR Code, and Scheme Summary */}
-        <div className="flex flex-col gap-5">
-          <div className="card p-5 flex flex-col items-center text-center">
-            <div className="eyebrow" style={{ alignSelf: "flex-start" }}>
-              Test Farmer Interface
-            </div>
-            <div className="my-3">
-              <QRCodeView
-                url={`${qrBase}/farmer?crop=${selectedCrop}&auto=1`}
-                size={140}
-              />
-            </div>
-            <p className="muted" style={{ fontSize: 12.5, lineHeight: 1.45 }}>
-              Scan to preview the automated voice alert as experienced by farmers in this cluster.
-            </p>
-            <div className="flex items-center gap-2 mt-3">
-              <Link
-                href={`/farmer?crop=${selectedCrop}&auto=1`}
-                className="btn btn-primary"
-                style={{ fontSize: 12 }}
-              >
-                Open Farmer View →
-              </Link>
-              <Link href="/admin" className="btn" style={{ fontSize: 12 }}>
-                Officer View
-              </Link>
-            </div>
-          </div>
-
-          <div className="card p-5">
-            <div className="eyebrow mb-2">Government Integration Pitch</div>
-            <div className="flex flex-col gap-2 faint" style={{ fontSize: 12.5, lineHeight: 1.5 }}>
-              <div>
-                🟢 <b>AgriStack UFSI</b>: Provides plot-level crop sown registry without manual survey overhead.
-              </div>
-              <div>
-                👩‍🌾 <b>Krishi Sakhi Yojana</b>: Deploys 70,000 certified village workers (NRLM) as the human touchpoint.
-              </div>
-              <div>
-                🏢 <b>CSC VLE Network</b>: 5 lakh digital centers act as offline booking counters for elderly or non-tech farmers.
-              </div>
-            </div>
-          </div>
-
-          <RegistryUpload />
-        </div>
-      </section>
+        {/* Reassuring Footer */}
+        <footer style={{ padding: "12px 20px", borderTop: "1px solid var(--border)", background: "var(--dash-bg)", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+          <span className="faint">Kisan Setu Field Network · Kolar</span>
+          <Link href={`/farmer?crop=${selectedCrop}&auto=1`} className="link">
+            Open farmer audio preview →
+          </Link>
+        </footer>
+      </div>
 
       {toast && <Toast message={toast} onDone={() => setToast("")} />}
-    </DashShell>
+    </div>
   );
 }
