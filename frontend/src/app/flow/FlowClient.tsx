@@ -18,8 +18,8 @@ const STEPS = [
   { t: "Detect", c: "Kolar’s tomato price is collapsing — arrivals flooded the mandi and the price fell from ₹18 to ₹4/kg. The crash-risk score hits 100." },
   { t: "Route", c: "Kisan Setu instantly matches the surplus to the nearest processing units. Crop that would be dumped can now be saved instead." },
   { t: "Alert", c: "An alert leaves the officer’s console and travels to the farmer — as a voice call and SMS, in the farmer’s own language." },
-  { t: "Listen", c: "The phone speaks the offer aloud. No app, no reading — the farmer just listens and taps once. Pick a language below to hear it." },
-  { t: "Confirmed", c: "The farmer accepts. The officer sees it confirmed. The crop becomes paste at a women’s unit — farmer paid, food saved." },
+  { t: "Listen", c: "It's an automated call — the phone speaks the offer aloud. No app, no reading: the farmer just listens and presses 1 to accept. Pick a language below to hear it." },
+  { t: "Confirmed", c: "The farmer presses 1. The deal is booked and the unit is notified. The farmer brings the crop to the unit, which turns it into paste and pays ₹9/kg." },
 ];
 
 export default function FlowClient({
@@ -64,6 +64,19 @@ export default function FlowClient({
         <div className="mt-1"><LanguageSwitch value={lang} onChange={changeLang} /></div>
       </section>
 
+      {/* the whole deal in one line — who does what */}
+      <section className="card p-3" style={{ overflowX: "auto" }}>
+        <div className="flex items-center gap-2" style={{ minWidth: "max-content" }}>
+          <span className="eyebrow" style={{ whiteSpace: "nowrap", marginRight: 4 }}>How the deal works</span>
+          {["Detect the crash", "Call the farmer", "Farmer presses 1", "Booked · unit notified", "Farmer delivers crop", "Unit makes paste, pays ₹9"].map((s, i) => (
+            <span key={i} className="flex items-center gap-2" style={{ whiteSpace: "nowrap" }}>
+              <span className="pill" style={{ fontSize: 12 }}>{s}</span>
+              {i < 5 && <span style={{ color: "var(--ink-3)" }}>→</span>}
+            </span>
+          ))}
+        </div>
+      </section>
+
       <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
         {/* officer */}
         <div className="card p-5 lg:col-span-3">
@@ -96,7 +109,7 @@ export default function FlowClient({
           <PhoneFrame height={460}>
             {step < 2 && <Waiting lang={lang} />}
             {step === 2 && <Ringing crop={alert.cropNames[lang]} lang={lang} />}
-            {step === 3 && <AlertCard a={alert} lang={lang} status="pending" autoPlay />}
+            {step === 3 && <AlertCard a={alert} lang={lang} status="pending" autoPlay mode="basic" />}
             {step >= 4 && <AlertCard a={alert} lang={lang} status="accepted" />}
           </PhoneFrame>
         </div>

@@ -3,7 +3,8 @@
 import { stopSpeak } from "@/lib/speak";
 import SpeakButton from "@/components/SpeakButton";
 import ValueChain from "@/components/ValueChain";
-import { STR, voiceCode, type Lang } from "@/lib/i18n";
+import Keypad from "@/components/Keypad";
+import { STR, voiceCode, type Lang, type Mode } from "@/lib/i18n";
 import type { AlertBundle } from "@/lib/engine";
 
 function scriptClass(lang: Lang) {
@@ -15,6 +16,7 @@ export default function AlertCard({
   lang,
   status,
   autoPlay = false,
+  mode = "app",
   onAccept,
   onDecline,
 }: {
@@ -22,12 +24,14 @@ export default function AlertCard({
   lang: Lang;
   status: "pending" | "accepted" | "declined";
   autoPlay?: boolean;
+  mode?: Mode;
   onAccept?: () => void;
   onDecline?: () => void;
 }) {
   const t = STR[lang];
   const sc = scriptClass(lang);
   const crop = a.cropNames[lang];
+  const basic = mode === "basic";
 
   if (status === "accepted") {
     return (
@@ -37,6 +41,7 @@ export default function AlertCard({
         <p className={sc} style={{ fontSize: 13.5, marginTop: 10, opacity: 0.9, lineHeight: 1.55 }}>
           {t.bring(crop, a.unitName, a.offer)}
         </p>
+        <p className={`faint ${sc}`} style={{ fontSize: 12, marginTop: 8, lineHeight: 1.5 }}>{t.bookedNote}</p>
       </Screen>
     );
   }
@@ -60,6 +65,11 @@ export default function AlertCard({
       </div>
 
       <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+        {basic && (
+          <div className={sc} style={{ background: "#eef7f0", border: "1px solid var(--border)", borderRadius: 10, padding: "8px 11px", fontSize: 11.5, fontWeight: 600, color: "var(--brand-deep)", lineHeight: 1.35 }}>
+            {t.callBanner}
+          </div>
+        )}
         <div className="panel" style={{ padding: 12 }}>
           <div className={`faint ${sc}`} style={{ fontSize: 11 }}>{t.sellHere}</div>
           <div style={{ fontWeight: 600, marginTop: 3 }}>{a.unitName}</div>
@@ -79,14 +89,28 @@ export default function AlertCard({
         />
 
         <div style={{ flex: 1 }} />
-        <div style={{ display: "flex", gap: 8 }}>
-          <button className={`btn ${sc}`} style={{ flex: 1 }} onClick={() => { stopSpeak(); onDecline?.(); }}>
-            {t.notNow}
-          </button>
-          <button className={`btn btn-primary ${sc}`} style={{ flex: 1.4 }} onClick={() => { stopSpeak(); onAccept?.(); }}>
-            {t.accept}
-          </button>
-        </div>
+
+        {basic ? (
+          <div>
+            <div className={`faint ${sc}`} style={{ fontSize: 11.5, textAlign: "center", marginBottom: 8 }}>{t.pressKeys}</div>
+            <Keypad
+              acceptLabel={t.accept}
+              declineLabel={t.notNow}
+              scriptClass={sc}
+              onAccept={() => { stopSpeak(); onAccept?.(); }}
+              onDecline={() => { stopSpeak(); onDecline?.(); }}
+            />
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className={`btn ${sc}`} style={{ flex: 1 }} onClick={() => { stopSpeak(); onDecline?.(); }}>
+              {t.notNow}
+            </button>
+            <button className={`btn btn-primary ${sc}`} style={{ flex: 1.4 }} onClick={() => { stopSpeak(); onAccept?.(); }}>
+              {t.accept}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

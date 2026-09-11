@@ -7,7 +7,7 @@ import IncomingCall from "@/components/IncomingCall";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import { onDispatch, readLatestDispatch, respondDispatch, type Dispatch } from "@/lib/dispatch";
 import { stopSpeak } from "@/lib/speak";
-import { STR, loadLang, saveLang, type Lang } from "@/lib/i18n";
+import { STR, loadLang, saveLang, loadMode, saveMode, type Lang, type Mode } from "@/lib/i18n";
 import type { AlertBundle } from "@/lib/engine";
 
 type Phase = "home" | "ringing" | "details" | "accepted" | "declined";
@@ -21,11 +21,12 @@ function toContent(d: Dispatch): AlertBundle {
 
 export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBundle; incoming: AlertBundle | null; auto: boolean }) {
   const [lang, setLang] = useState<Lang>("en");
+  const [mode, setMode] = useState<Mode>("basic");
   const [phase, setPhase] = useState<Phase>("home");
   const [alert, setAlert] = useState<AlertBundle | null>(null);
   const [dispatchId, setDispatchId] = useState<string | null>(null);
 
-  useEffect(() => setLang(loadLang()), []);
+  useEffect(() => { setLang(loadLang()); setMode(loadMode()); }, []);
 
   // ring on: URL handoff (scanned QR), a live dispatch, or a persisted pending one
   useEffect(() => {
@@ -59,6 +60,10 @@ export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBun
     setLang(l);
     saveLang(l);
   }
+  function changeMode(m: Mode) {
+    setMode(m);
+    saveMode(m);
+  }
 
   const t = STR[lang];
   const sc = lang === "hi" ? "deva" : lang === "kn" ? "kn" : "";
@@ -75,6 +80,12 @@ export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBun
           <LanguageSwitch value={lang} onChange={changeLang} />
         </div>
 
+        {/* interface mode: basic keypad phone (default) vs smartphone app */}
+        <div style={{ display: "flex", gap: 6, padding: "8px 16px", borderBottom: "1px solid var(--dash-line)", background: "var(--dash-bg)" }}>
+          <ModePill active={mode === "basic"} label={t.modeBasic} onClick={() => changeMode("basic")} sc={sc} />
+          <ModePill active={mode === "app"} label={t.modeApp} onClick={() => changeMode("app")} sc={sc} />
+        </div>
+
         {/* screen */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           {phase === "home" && <Home lang={lang} onSample={() => { setAlert(sample); setDispatchId(null); setPhase("ringing"); }} />}
@@ -82,7 +93,7 @@ export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBun
             <IncomingCall cropName={alert.cropNames[lang]} lang={lang} onAnswer={answer} onDecline={() => respond("declined")} />
           )}
           {phase === "details" && alert && (
-            <AlertCard a={alert} lang={lang} status="pending" autoPlay onAccept={() => respond("accepted")} onDecline={() => respond("declined")} />
+            <AlertCard a={alert} lang={lang} status="pending" autoPlay mode={mode} onAccept={() => respond("accepted")} onDecline={() => respond("declined")} />
           )}
           {phase === "accepted" && alert && <AlertCard a={alert} lang={lang} status="accepted" />}
           {phase === "declined" && alert && <AlertCard a={alert} lang={lang} status="declined" />}
@@ -93,6 +104,23 @@ export default function FarmerApp({ sample, incoming, auto }: { sample: AlertBun
         )}
       </div>
     </div>
+  );
+}
+
+function ModePill({ active, label, onClick, sc }: { active: boolean; label: string; onClick: () => void; sc: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={sc}
+      style={{
+        flex: 1, padding: "6px 10px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer",
+        border: `1px solid ${active ? "var(--brand)" : "var(--border)"}`,
+        background: active ? "var(--brand)" : "var(--surface)",
+        color: active ? "#fff" : "var(--ink-2)",
+      }}
+    >
+      {label}
+    </button>
   );
 }
 

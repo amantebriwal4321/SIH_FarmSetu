@@ -17,6 +17,11 @@ type Str = {
   pause: string;
   resume: string;
   noVoice: string;
+  callBanner: string;   // "automated call, works on any phone"
+  pressKeys: string;    // "Press 1 to accept · Press 2 to decline"
+  bookedNote: string;   // reassurance that the unit is notified
+  modeBasic: string;    // toggle label
+  modeApp: string;      // toggle label
   accept: string;
   notNow: string;
   booked: string;
@@ -42,6 +47,11 @@ export const STR: Record<Lang, Str> = {
     pause: "❚❚ Pause",
     resume: "▶ Resume",
     noVoice: "🔇 No English voice on this device — open on an Android phone to hear it",
+    callBanner: "📞 Automated call · works on any phone — no app, no internet",
+    pressKeys: "Press 1 to accept · Press 2 to decline",
+    bookedNote: "The unit has been notified to expect your crop.",
+    modeBasic: "📟 Basic phone",
+    modeApp: "📱 Smartphone",
     accept: "Accept",
     notNow: "Not now",
     booked: "Booked",
@@ -65,6 +75,11 @@ export const STR: Record<Lang, Str> = {
     pause: "❚❚ रोकें",
     resume: "▶ जारी रखें",
     noVoice: "🔇 इस डिवाइस में हिंदी आवाज़ नहीं है — एंड्रॉइड फ़ोन पर सुनें",
+    callBanner: "📞 अपने-आप आने वाली कॉल · किसी भी फ़ोन पर चलती है — न ऐप, न इंटरनेट",
+    pressKeys: "स्वीकारने के लिए 1 दबाएँ · मना करने के लिए 2 दबाएँ",
+    bookedNote: "यूनिट को आपकी फसल के बारे में सूचित कर दिया गया है।",
+    modeBasic: "📟 साधारण फ़ोन",
+    modeApp: "📱 स्मार्टफ़ोन",
     accept: "स्वीकारें",
     notNow: "अभी नहीं",
     booked: "बुक हो गया",
@@ -88,6 +103,11 @@ export const STR: Record<Lang, Str> = {
     pause: "❚❚ ನಿಲ್ಲಿಸಿ",
     resume: "▶ ಮುಂದುವರಿಸಿ",
     noVoice: "🔇 ಈ ಸಾಧನದಲ್ಲಿ ಕನ್ನಡ ಧ್ವನಿ ಇಲ್ಲ — ಆಂಡ್ರಾಯ್ಡ್ ಫೋನ್‌ನಲ್ಲಿ ಕೇಳಿ",
+    callBanner: "📞 ಸ್ವಯಂಚಾಲಿತ ಕರೆ · ಯಾವುದೇ ಫೋನ್‌ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ — ಆ್ಯಪ್ ಇಲ್ಲ, ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ",
+    pressKeys: "ಒಪ್ಪಲು 1 ಒತ್ತಿ · ಬೇಡವೆಂದರೆ 2 ಒತ್ತಿ",
+    bookedNote: "ನಿಮ್ಮ ಬೆಳೆಯನ್ನು ನಿರೀಕ್ಷಿಸಲು ಘಟಕಕ್ಕೆ ತಿಳಿಸಲಾಗಿದೆ.",
+    modeBasic: "📟 ಸಾಮಾನ್ಯ ಫೋನ್",
+    modeApp: "📱 ಸ್ಮಾರ್ಟ್‌ಫೋನ್",
     accept: "ಒಪ್ಪಿ",
     notNow: "ಈಗ ಬೇಡ",
     booked: "ಬುಕ್ ಆಗಿದೆ",
@@ -115,4 +135,18 @@ export function loadLang(): Lang {
 }
 export function saveLang(l: Lang) {
   try { localStorage.setItem("ks_lang", l); } catch {}
+}
+
+// Farmer interface mode: a basic keypad phone (the reality for most) or a smartphone app.
+export type Mode = "basic" | "app";
+export function loadMode(): Mode {
+  if (typeof window === "undefined") return "basic";
+  try {
+    const v = localStorage.getItem("ks_mode");
+    if (v === "basic" || v === "app") return v;
+  } catch {}
+  return "basic";
+}
+export function saveMode(m: Mode) {
+  try { localStorage.setItem("ks_mode", m); } catch {}
 }
