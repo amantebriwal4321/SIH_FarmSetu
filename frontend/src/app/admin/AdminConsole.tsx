@@ -7,6 +7,7 @@ import PriceDrop from "@/components/PriceDrop";
 import SvgMap from "@/components/SvgMap";
 import RiskBadge, { riskColor } from "@/components/RiskBadge";
 import QRCodeView from "@/components/QRCodeView";
+import ValueChain from "@/components/ValueChain";
 import Toast from "@/components/Toast";
 import { sendDispatch, onConfirm } from "@/lib/dispatch";
 import { inr, num, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit, type AlertBundle } from "@/lib/engine";
@@ -97,6 +98,9 @@ export default function AdminConsole({
                 <Big label="Rupees saved" value={inr(d.totals.rupeesSaved)} accent="var(--brand-deep)" />
                 <Big label="Kg rescued" value={num(d.totals.kgRescued)} />
                 <Big label="Units that took it" value={String(d.totals.unitsEngaged)} />
+              </div>
+              <div className="mb-5">
+                <ValueChain crash={d.totals.crashPrice} offer={d.totals.offerPrice} productName={d.alert.productName} productPrice={d.alert.productPrice} cropSlug={d.alert.cropSlug} lang="en" />
               </div>
               {confirmed && (
                 <div className="panel p-3 mb-4" style={{ borderColor: "var(--brand)", color: "var(--brand-deep)", fontSize: 13, fontWeight: 600 }}>

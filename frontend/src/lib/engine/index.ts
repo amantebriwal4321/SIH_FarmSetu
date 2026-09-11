@@ -119,6 +119,7 @@ export function getOverview() {
 }
 
 export type AlertBundle = {
+  cropSlug: string;
   cropNames: Record<Lang, string>;
   unitName: string;
   offer: number;
@@ -148,7 +149,7 @@ export function alertText(slug: string): AlertBundle | null {
 
   if (!best) {
     return {
-      cropNames, unitName: "", offer, crash, productName: "", productPrice: 0,
+      cropSlug: c.slug, cropNames, unitName: "", offer, crash, productName: "", productPrice: 0,
       texts: {
         en: `${c.name} prices are crashing. No processing unit is free nearby yet.`,
         hi: `${c.nameHi} के दाम गिर रहे हैं। अभी पास में कोई यूनिट खाली नहीं है।`,
@@ -164,7 +165,7 @@ export function alertText(slug: string): AlertBundle | null {
   const prod = productValue(best.products || []);
 
   return {
-    cropNames, unitName: best.unitName, offer, crash, productName: prod.name, productPrice: prod.price,
+    cropSlug: c.slug, cropNames, unitName: best.unitName, offer, crash, productName: prod.name, productPrice: prod.price,
     texts: {
       en: `${c.name} prices are crashing (now ₹${crash}/kg). Do not dump your crop. ${best.unitName}, ${nearEn}, will buy it at ₹${offer}/kg.`,
       hi: `${c.nameHi} के दाम गिर रहे हैं (अभी ₹${crash}/किलो)। फसल मत फेंकिए। ${best.unitName}, ${nearHi}, ₹${offer}/किलो में खरीदेगा।`,

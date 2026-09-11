@@ -14,7 +14,7 @@ type Phase = "home" | "ringing" | "details" | "accepted" | "declined";
 
 function toContent(d: Dispatch): AlertBundle {
   return {
-    cropNames: d.cropNames, unitName: d.unitName, offer: d.offer, crash: d.crash,
+    cropSlug: d.cropSlug, cropNames: d.cropNames, unitName: d.unitName, offer: d.offer, crash: d.crash,
     productName: d.productName ?? "", productPrice: d.productPrice ?? 0, texts: d.texts,
   };
 }
