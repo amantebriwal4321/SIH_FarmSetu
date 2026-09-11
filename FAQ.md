@@ -97,6 +97,15 @@ unit at the right moment.
 
 ---
 
+## 5c. "How are alerts crop-specific, and what if the farmer doesn't have a phone or pick up?"
+
+**We use the AgriStack Crop Sown Registry, and deploy the Krishi Sakhi (KSCP) women para-worker network as the human bridge.**
+1. **Targeting is strictly crop-specific:** A tomato crash alert is sent ONLY to farmers registered as having sown tomato this season in the AgriStack Digital Crop Survey (UFSI format), not onion or pulse farmers. The officer console shows the exact count: e.g. "42 tomato farmers across Vemgal, Sugatur, Narasapura."
+2. **The human middle layer (`/field`):** For farmers who are elderly, illiterate, or don't pick up the phone, our system dispatches rosters to the local **Krishi Sakhi** (70,000 certified women extension workers under MoA&FW/MoRD, Karnataka Phase 1) or **CSC VLE Center**.
+3. **Three contact paths:** The Krishi Sakhi can **Call**, **Mark visited in the field**, or register a farmer who **Came to the center in person** (zero-tech walk-in). Each action immediately relays confirmation and expected tonnage back to the officer's pickup manifest.
+
+---
+
 ## 6. "How do the alerts actually go out? (You're not using Twilio)"
 
 **Sending a voice call/SMS is a solved commodity — any gateway (Twilio/Exotel/MSG91) does it.**

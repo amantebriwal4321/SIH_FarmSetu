@@ -134,20 +134,18 @@ idle unit → a buyer, in real time. So we're deployable on money already alloca
 ---
 
 ## 8. What we built (the app, screen by screen)
-A single Next.js web app, four routes:
-- **`/` Landing** — the problem + two doors (Officer / Farmer) + "See the flow."
-- **`/flow`** — a playable, video-like 5-step walkthrough (Detect → Route → Alert → Listen →
-  Confirmed). The reliable stage demo; the phone speaks at the "Listen" step.
-- **`/admin` Officer console** — a clean dashboard: KPI cards, the at-risk crop list with a 0–100
-  score, a plain price read (₹18 → ₹3.82, ▼79%), one action ("Alert farmers & route surplus"), and
-  after routing: impact numbers + a clear map (mandi → units with tonnes) + a **QR code**.
-- **`/farmer` Farmer app** — a full-screen **incoming call** that **speaks the alert** in English /
-  Hindi / Kannada, then a "Booked" confirmation. **Two modes:** *Basic phone* (the default) shows the
-  realistic keypad-phone experience — the farmer **presses 1 to accept / 2 to decline**, works on any
-  ₹800 phone, no app; *Smartphone* shows the richer tap-to-accept app for the minority who have one.
+A single Next.js web app, five connected routes:
+- **`/` Landing** — the problem + three doors (Officer / Field Partner / Farmer) + Scheme & Gaps Matrix + "See the flow."
+- **`/flow`** — a playable walkthrough (Detect → Route → Field Bridge / Krishi Sakhi → Listen / Visit → Confirmed).
+- **`/admin` Officer console** — a clean dashboard: KPI cards, at-risk crops, crop-specific AgriStack farmer counts (e.g. 42 tomato growers across Vemgal, Sugatur, Narasapura), routing action, SvgMap of matched units, and confirmed pickup list with AgriStack IDs and outreach methods.
+- **`/field` Field Partner console** — the human middle layer for smallholders without smartphones:
+  - Role switcher: **Krishi Sakhi (KSCP)**, **CSC VLE**, and **FPO Coordinator**.
+  - Village-scoped rosters filtered by crop and covered villages.
+  - One-tap actions: 📞 **Call farmer**, 🚶 **Mark visited**, 🏢 **Came to center** (walk-in).
+  - Built-in AgriStack CSV import / export.
+- **`/farmer` Farmer app** — a full-screen **incoming call** that **speaks the alert** in English / Hindi / Kannada, displays the targeted AgriStack farmer identity, provides keypad response (1 = accept, 2 = decline), and highlights the "visit nearest center" zero-tech path.
 
-**Live handshake (no backend):** route a crop on the officer console → the farmer phone rings and
-speaks; the farmer accepts → the officer sees it confirmed. Cross-device via a **QR** the farmer scans.
+**Live 3-layer handshake (no backend):** Officer routes surplus → `/field` receives crop roster → Field partner calls/visits farmer or farmer visits center → Farmer accepts → Real AgriStack identity relays back up to the Officer console pickup manifest. Cross-device via a **QR code**.
 
 ---
 

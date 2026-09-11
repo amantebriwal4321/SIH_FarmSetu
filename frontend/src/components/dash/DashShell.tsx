@@ -10,7 +10,7 @@ export default function DashShell({
 }: {
   title: string;
   subtitle?: string;
-  active: "overview" | "farmer" | "flow";
+  active: "overview" | "field" | "farmer" | "flow";
   children: ReactNode;
 }) {
   return (
@@ -28,6 +28,7 @@ export default function DashShell({
         <div className="eyebrow" style={{ padding: "0 8px", marginBottom: 8 }}>Menu</div>
         <nav className="flex flex-col gap-1">
           <NavItem href="/admin" label="Overview" active={active === "overview"} icon={<IconGrid />} />
+          <NavItem href="/field" label="Field partner" active={active === "field"} icon={<IconUsers />} />
           <NavItem href="/flow" label="See the flow" active={active === "flow"} icon={<IconPlay />} />
           <NavItem href="/farmer" label="Farmer app" active={active === "farmer"} icon={<IconPhone />} />
         </nav>
@@ -98,4 +99,5 @@ const s = { width: 18, height: 18, fill: "none", stroke: "currentColor", strokeW
 const IconGrid = () => (<svg viewBox="0 0 24 24" {...s}><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>);
 const IconPlay = () => (<svg viewBox="0 0 24 24" {...s}><circle cx="12" cy="12" r="9" /><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none" /></svg>);
 const IconPhone = () => (<svg viewBox="0 0 24 24" {...s}><rect x="7" y="3" width="10" height="18" rx="2.5" /><path d="M11 18h2" /></svg>);
+const IconUsers = () => (<svg viewBox="0 0 24 24" {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>);
 const IconSearch = () => (<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--ink-3)" strokeWidth="1.8"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.2-3.2" strokeLinecap="round" /></svg>);

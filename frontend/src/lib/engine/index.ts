@@ -4,6 +4,7 @@
 import { CROPS, UNITS, BUYERS, DISTRICT, type Crop } from "./seed";
 import { computeRiskSeries, riskLabel, type RiskLabel, type RiskPoint } from "./predictor";
 import { match, type Match, type MatchTotals } from "./matching";
+import { loadRegistry, alertTargets } from "./registry";
 import type { Lang } from "../i18n";
 
 const SEASON_BASELINE_DAYS = 14;
@@ -106,6 +107,7 @@ export function getOverview() {
     kgAtRisk += Math.round(s.surplusTonnes * 1000);
     rupeesSaved += m?.totals.rupeesSaved ?? 0;
   }
+  const registry = loadRegistry();
   return {
     district: `${DISTRICT.name}, ${DISTRICT.state}`,
     cropsTracked: sums.length,
@@ -114,7 +116,7 @@ export function getOverview() {
     potentialRupeesSaved: rupeesSaved,
     unitsAvailable: UNITS.length,
     buyers: BUYERS.length,
-    farmersReached: 1240, // representative for the demo district
+    farmersReached: registry.length, // total farmers in AgriStack demo registry
   };
 }
 
@@ -187,3 +189,6 @@ export type { Match, MatchTotals } from "./matching";
 export type { RiskLabel } from "./predictor";
 export type { Unit, District, Buyer, DemoFarmer } from "./seed";
 export { DISTRICT, UNITS, BUYERS, DEMO_FARMERS } from "./seed";
+export { loadRegistry, alertTargets, farmersForCrop, partnersByRole, partnerFor, ROLE_LABELS, FIELD_PARTNERS, VILLAGE_PARTNERS } from "./registry";
+export type { FarmerRecord, FieldPartner, PartnerRole, AlertTargets } from "./registry";
+

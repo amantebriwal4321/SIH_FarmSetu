@@ -31,6 +31,16 @@ type Str = {
   mandi: (crash: number) => string;
   bring: (crop: string, unit: string, offer: number) => string;
   pickup: (crop: string, point: string, phone: string, unit: string) => string;
+  nearestCenterNotice: string;
+  fieldConsole: string;
+  fieldSubtitle: string;
+  roleKrishiSakhi: string;
+  roleVle: string;
+  roleFpo: string;
+  actionCall: string;
+  actionVisit: string;
+  actionCenter: string;
+  statusBooked: string;
   // value chain (who gains what, and why buy from the farmer not the cheaper mandi)
   whyQ: (offer: number, crash: number) => string;
   chainFresh: string;
@@ -58,6 +68,16 @@ export const STR: Record<Lang, Str> = {
     booked: "Booked",
     okNotNow: "Okay, not now",
     waiting: "Waiting for a price alert…",
+    nearestCenterNotice: "No phone or internet? Visit your village Krishi Sakhi or CSC Center to book in person.",
+    fieldConsole: "Field Partner Console",
+    fieldSubtitle: "Village-level human bridge for farmers without smartphones.",
+    roleKrishiSakhi: "Krishi Sakhi (KSCP)",
+    roleVle: "CSC VLE",
+    roleFpo: "FPO Coordinator",
+    actionCall: "📞 Call farmer",
+    actionVisit: "🚶 Visited field",
+    actionCenter: "🏢 At Center",
+    statusBooked: "Booked",
     header: (c) => `${c} price crashing`,
     mandi: (crash) => `Mandi is paying only ₹${crash}/kg today`,
     bring: (c, u, o) => `Bring your ${c} to ${u}. You’ll get ₹${o}/kg.`,
@@ -87,6 +107,16 @@ export const STR: Record<Lang, Str> = {
     booked: "बुक हो गया",
     okNotNow: "ठीक है, अभी नहीं",
     waiting: "मूल्य चेतावनी की प्रतीक्षा…",
+    nearestCenterNotice: "फ़ोन या इंटरनेट नहीं है? सीधे अपने गाँव की कृषि सखी या सीएससी केंद्र जाकर बुक करवाएँ।",
+    fieldConsole: "फील्ड पार्टनर कंसोल",
+    fieldSubtitle: "स्मार्टफ़ोन न रखने वाले किसानों के लिए जमीनी सेतु।",
+    roleKrishiSakhi: "कृषि सखी (केएससीपी)",
+    roleVle: "सीएससी वीएलई",
+    roleFpo: "एफपीओ समन्वयक",
+    actionCall: "📞 किसान को कॉल",
+    actionVisit: "🚶 खेत दौरा",
+    actionCenter: "🏢 केंद्र पर आए",
+    statusBooked: "बुक किया गया",
     header: (c) => `${c} के दाम गिर रहे हैं`,
     mandi: (crash) => `मंडी आज सिर्फ ₹${crash}/किलो दे रही है`,
     bring: (c, u, o) => `अपनी ${c} ${u} ले जाइए। ₹${o}/किलो मिलेगा।`,
@@ -116,6 +146,16 @@ export const STR: Record<Lang, Str> = {
     booked: "ಬುಕ್ ಆಗಿದೆ",
     okNotNow: "ಸರಿ, ಈಗ ಬೇಡ",
     waiting: "ಬೆಲೆ ಎಚ್ಚರಿಕೆಗಾಗಿ ಕಾಯುತ್ತಿದೆ…",
+    nearestCenterNotice: "ಫೋನ್ ಅಥವಾ ಇಂಟರ್ನೆಟ್ ಇಲ್ಲವೇ? ನೇರವಾಗಿ ನಿಮ್ಮ ಗ್ರಾಮದ ಕೃಷಿ ಸಖಿ ಅಥವಾ ಸಿಎಸ್‌ಸಿ ಕೇಂದ್ರಕ್ಕೆ ಭೇಟಿ ನೀಡಿ ಬುಕ್ ಮಾಡಿ.",
+    fieldConsole: "ಕ್ಷೇತ್ರ ಪಾಲುದಾರ ಕನ್ಸೋಲ್",
+    fieldSubtitle: "ಸ್ಮಾರ್ಟ್‌ಫೋನ್ ಇಲ್ಲದ ರೈತರಿಗೆ ಗ್ರಾಮ ಮಟ್ಟದ ಮಾನವ ಸಂಪರ್ಕ ಸೇತು.",
+    roleKrishiSakhi: "ಕೃಷಿ ಸಖಿ (ಕೆಎಸ್‌ಸಿಪಿ)",
+    roleVle: "ಸಿಎಸ್‌ಸಿ ವಿಎಲ್‌ಇ",
+    roleFpo: "ಎಫ್‌ಪಿಒ ಸಂಯೋಜಕರು",
+    actionCall: "📞 ರೈತರಿಗೆ ಕರೆ",
+    actionVisit: "🚶 ಕ್ಷೇತ್ರ ಭೇಟಿ",
+    actionCenter: "🏢 ಕೇಂದ್ರಕ್ಕೆ ಬಂದಿದ್ದಾರೆ",
+    statusBooked: "ಬುಕ್ ಮಾಡಲಾಗಿದೆ",
     header: (c) => `${c} ಬೆಲೆ ಕುಸಿಯುತ್ತಿದೆ`,
     mandi: (crash) => `ಮಂಡಿ ಇಂದು ₹${crash}/ಕೆಜಿ ಮಾತ್ರ ಕೊಡುತ್ತಿದೆ`,
     bring: (c, u, o) => `ನಿಮ್ಮ ${c} ${u} ಗೆ ತನ್ನಿ. ₹${o}/ಕೆಜಿ ಸಿಗುತ್ತದೆ.`,

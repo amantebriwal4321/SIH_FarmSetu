@@ -11,7 +11,8 @@ import ValueChain from "@/components/ValueChain";
 import LivePrices, { type LivePricesData } from "@/components/LivePrices";
 import Toast from "@/components/Toast";
 import { sendDispatch, onConfirm, type PickupFarmer } from "@/lib/dispatch";
-import { inr, num, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit, type AlertBundle } from "@/lib/engine";
+import { inr, num, alertTargets, type CropSummary, type CropDetail, type Match, type MatchTotals, type Unit, type AlertBundle } from "@/lib/engine";
+import Link from "next/link";
 
 type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle };
 type Overview = {
@@ -31,7 +32,9 @@ export default function AdminConsole({
   const [pickups, setPickups] = useState<PickupFarmer[]>([]);
 
   const d = details[selected];
-  const farmers = Math.max(120, Math.round(d.detail.surplusTonnes * 1.7));
+  const targets = alertTargets(selected);
+  const farmers = targets.count;
+  const topVillages = targets.byVillage.slice(0, 3).map((v) => v.village).join(", ");
 
   useEffect(() => { setRouted(false); setConfirmed(false); setPickups([]); }, [selected]);
   useEffect(() => onConfirm((p) => {
@@ -52,12 +55,15 @@ export default function AdminConsole({
         productName: d.alert.productName, productPrice: d.alert.productPrice,
         collectionPoint: d.alert.collectionPoint, unitPhone: d.alert.unitPhone,
         texts: d.alert.texts, ts: Date.now(), status: "pending",
+        hop: "field",
+        targetVillages: targets.byVillage.map((v) => v.village),
       });
     }
-    setToast(`Alert sent to ${num(farmers)} farmers`);
+    setToast(`Targeted ${num(farmers)} ${d.detail.name.toLowerCase()} farmers across ${targets.byVillage.length} villages`);
   }
 
   const farmerUrl = `${qrBase}/farmer?crop=${selected}&auto=1`;
+  const fieldUrl = `${qrBase}/field?crop=${selected}`;
 
   return (
     <DashShell title="Overview" subtitle="Spot a crop about to crash, then route the surplus before it’s dumped." active="overview">
@@ -66,7 +72,7 @@ export default function AdminConsole({
         <KpiCard filled label="Rupees rescuable" value={inr(overview.potentialRupeesSaved)} caption="this week, vs dumping" />
         <KpiCard label="Crops at risk" value={String(overview.cropsAtRisk)} caption={`of ${overview.cropsTracked} tracked`} />
         <KpiCard label="Surplus at risk" value={num(Math.round(overview.kgAtRisk / 1000)) + " t"} caption="about to flood the mandi" />
-        <KpiCard label="Farmers reachable" value={num(overview.farmersReached)} caption="by phone, in their language" />
+        <KpiCard label="Farmers reachable" value={num(overview.farmersReached)} caption="AgriStack registry · Kolar" />
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
@@ -77,6 +83,9 @@ export default function AdminConsole({
               <div className="flex items-center gap-3">
                 <h2 className="display" style={{ fontSize: 22, fontWeight: 700 }}>{d.detail.name}</h2>
                 <RiskBadge label={d.detail.label} />
+                <span className="pill" style={{ fontSize: 11, background: "rgba(22,101,52,0.08)", color: "var(--brand-deep)" }}>
+                  AgriStack: {num(farmers)} growers
+                </span>
               </div>
               {!routed
                 ? <button className="btn btn-primary" onClick={routeIt}>Alert farmers & route surplus →</button>
@@ -89,13 +98,11 @@ export default function AdminConsole({
               <p style={{ fontSize: 15.5, marginTop: 18, lineHeight: 1.6 }}>
                 <b>{num(d.detail.surplusTonnes)} t</b> of {d.detail.name.toLowerCase()} is about to be dumped.
                 Routing it now saves about <b style={{ color: "var(--brand-deep)" }}>{inr(d.totals.rupeesSaved)}</b> and
-                reaches <b>{num(farmers)}</b> farmers with a fair price of ₹{d.totals.offerPrice}/kg.
+                targets <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} via AgriStack crop-sown records.
               </p>
             ) : (
               <p style={{ fontSize: 15.5, marginTop: 18, lineHeight: 1.6 }}>
-                Done. <b>{num(d.totals.tonnesMatched)} t</b> is now going to <b>{d.totals.unitsEngaged}</b> nearby
-                units at <b style={{ color: "var(--brand-deep)" }}>₹{d.totals.offerPrice}/kg</b> — instead of the
-                ₹{d.totals.crashPrice} mandi crash. <b>{num(farmers)}</b> farmers were alerted by phone.
+                Dispatched to field tier. <b>{num(d.totals.tonnesMatched)} t</b> routed to <b>{d.totals.unitsEngaged}</b> units at <b style={{ color: "var(--brand-deep)" }}>₹{d.totals.offerPrice}/kg</b>. <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} alerted through Krishi Sakhis, CSC VLEs, and FPOs.
               </p>
             )}
           </div>
@@ -119,7 +126,15 @@ export default function AdminConsole({
                   <div className="flex flex-col gap-2">
                     {pickups.map((f, i) => (
                       <div key={i} className="flex items-center justify-between" style={{ fontSize: 13.5 }}>
-                        <span style={{ fontWeight: 600 }}>{f.name} <span className="faint" style={{ fontWeight: 400 }}>· {f.village}</span></span>
+                        <div className="flex items-center gap-2">
+                          {f.farmerId && <span className="mono faint" style={{ fontSize: 11, background: "var(--dash-bg)", padding: "1px 6px", borderRadius: 4 }}>{f.farmerId}</span>}
+                          <span style={{ fontWeight: 600 }}>{f.name} <span className="faint" style={{ fontWeight: 400 }}>· {f.village}</span></span>
+                          {f.method && (
+                            <span className="pill" style={{ fontSize: 10, padding: "2px 6px" }}>
+                              {f.method === "center" ? "🏢 Center" : f.method === "visited" ? "🚶 Field visit" : "📞 Call"}
+                            </span>
+                          )}
+                        </div>
                         <span className="mono" style={{ fontWeight: 600 }}>{f.tonnes} t</span>
                       </div>
                     ))}
@@ -169,6 +184,11 @@ export default function AdminConsole({
                 Scan with a phone{isLan ? " on the same Wi-Fi" : ""} — it opens the farmer’s app, rings and speaks this alert.
               </p>
               <div className="mono faint" style={{ fontSize: 10.5, marginTop: 8, wordBreak: "break-all" }}>{farmerUrl}</div>
+              <div style={{ width: "100%", marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                <Link href={fieldUrl} className="btn w-full" style={{ fontSize: 13, display: "inline-flex", justifyContent: "center" }}>
+                  Open Field Partner console (/field) →
+                </Link>
+              </div>
             </div>
           )}
         </div>

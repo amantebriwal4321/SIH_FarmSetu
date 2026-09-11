@@ -10,16 +10,16 @@ import RiskBadge from "@/components/RiskBadge";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import { stopSpeak } from "@/lib/speak";
 import { STR, loadLang, saveLang, type Lang } from "@/lib/i18n";
-import { num, UNITS, type CropDetail, type Match, type MatchTotals, type AlertBundle } from "@/lib/engine";
+import { num, alertTargets, UNITS, type CropDetail, type Match, type MatchTotals, type AlertBundle } from "@/lib/engine";
 
 const STEP_MS = 4200;
 
 const STEPS = [
   { t: "Detect", c: "Kolar’s tomato price is collapsing — arrivals flooded the mandi and the price fell from ₹18 to ₹4/kg. The crash-risk score hits 100." },
   { t: "Route", c: "Kisan Setu instantly matches the surplus to the nearest processing units. Crop that would be dumped can now be saved instead." },
-  { t: "Alert", c: "An alert leaves the officer’s console and travels to the farmer — as a voice call and SMS, in the farmer’s own language." },
-  { t: "Listen", c: "It's an automated call — the phone speaks the offer aloud. No app, no reading: the farmer just listens and presses 1 to accept. Pick a language below to hear it." },
-  { t: "Confirmed", c: "The farmer presses 1. The deal is booked and the unit is notified. The farmer brings the crop to the unit, which turns it into paste and pays ₹9/kg." },
+  { t: "Field Bridge", c: "AgriStack isolates the exact tomato plots. Krishi Sakhis, CSC VLEs, and FPOs receive village rosters to reach non-smartphone farmers." },
+  { t: "Listen & Visit", c: "An automated voice call speaks the offer aloud in Kannada, Hindi, or English — with an in-person walk-in option at the village center." },
+  { t: "Confirmed", c: "The farmer presses 1 (or is booked at the center). The deal is locked, the unit is notified, and the FPO collection van routes pickup." },
 ];
 
 export default function FlowClient({
@@ -45,6 +45,7 @@ export default function FlowClient({
   }, [playing, step]);
 
   const routed = step >= 1;
+  const targets = alertTargets(detail.slug);
 
   function go(n: number) { setPlaying(false); stopSpeak(); setStep(Math.max(0, Math.min(STEPS.length - 1, n))); }
   function restart() { stopSpeak(); setStep(0); setPlaying(true); }
@@ -68,7 +69,7 @@ export default function FlowClient({
       <section className="card p-3" style={{ overflowX: "auto" }}>
         <div className="flex items-center gap-2" style={{ minWidth: "max-content" }}>
           <span className="eyebrow" style={{ whiteSpace: "nowrap", marginRight: 4 }}>How the deal works</span>
-          {["Detect the crash", "Call the farmer", "Farmer presses 1", "Booked · unit notified", "Farmer delivers crop", "Unit makes paste, pays ₹9"].map((s, i) => (
+          {["Detect crash", "Route surplus", "Krishi Sakhi receives roster", "Voice call / Center visit", "Farmer locks price", "Booked · FPO van pickup"].map((s, i) => (
             <span key={i} className="flex items-center gap-2" style={{ whiteSpace: "nowrap" }}>
               <span className="pill" style={{ fontSize: 12 }}>{s}</span>
               {i < 5 && <span style={{ color: "var(--ink-3)" }}>→</span>}
@@ -96,7 +97,7 @@ export default function FlowClient({
           </div>
           {step >= 4 && (
             <div className="panel p-3 mt-4" style={{ borderColor: "var(--brand)", color: "var(--brand-deep)", fontSize: 13, fontWeight: 600 }}>
-              ✓ Confirmed — {num(Math.max(120, Math.round(detail.surplusTonnes * 1.7)))} farmers notified, 1 accepted live
+              ✓ Confirmed — {num(targets.count)} {detail.name.toLowerCase()} farmers targeted via AgriStack across {targets.byVillage.length} villages, 1 accepted live
             </div>
           )}
         </div>
@@ -104,7 +105,7 @@ export default function FlowClient({
         {/* travel + phone */}
         <div className="lg:col-span-2 flex flex-col items-center justify-center gap-4">
           {step === 2 && (
-            <div className="pill" style={{ fontSize: 13, animation: "pulse 1s ease-in-out infinite" }}>📨 alert travelling to the farmer…</div>
+            <div className="pill" style={{ fontSize: 13, animation: "pulse 1s ease-in-out infinite" }}>👩‍🌾 Krishi Sakhi receives tomato grower roster…</div>
           )}
           <PhoneFrame height={460}>
             {step < 2 && <Waiting lang={lang} />}

@@ -8,21 +8,19 @@ processing units before it's dumped, and alert the farmer by phone call in their
 
 ## What this is
 
-**Three users, one connected system:**
-1. **Officer** (APMC/govt) — sees the district on a screen, clicks one button to route the surplus.
-2. **Farmer** — only interaction is receiving a phone call and pressing 1 to accept.
-3. **Processing unit** (SHG/FPO factory) — receives the crop, makes paste, pays the farmer.
+**Three layers, one connected system:**
+1. **Officer** (`/admin`) — APMC/Agriculture Dept officer spots the crash, routes surplus, and dispatches targeted alerts.
+2. **Field Partner** (`/field`) — The human middle layer: Krishi Sakhi (KSCP), CSC VLE, or FPO Coordinator working the village roster for smallholders without smartphones.
+3. **Farmer** (`/farmer`) — Listens to an automated voice call in their language (Kannada/Hindi/English) or books walk-in at nearest center.
 
-**Core insight:** The government already funds every piece — the factories (PMFME), the farmer groups
-(10,000 FPO scheme), the price data (Agmarknet). We built the one missing wire: the intelligence
-that connects a crashing crop to the unit that can save it.
+**Core insight:** The government already funds every piece — the factories (PMFME), the farmer groups (10,000 FPO scheme), the price data (Agmarknet), the digital land registry (AgriStack UFSI), and certified women para-workers (Krishi Sakhi Convergence Programme). We built the real-time wire that connects them.
 
 ---
 
 ## Stack
 
 - **Next.js 16 (App Router) + React 19 + TypeScript** — single self-contained app, no backend/DB
-- **No backend at runtime.** All prediction/matching logic is TypeScript in `src/lib/engine/`
+- **No backend at runtime.** All prediction/matching/registry logic is TypeScript in `src/lib/engine/`
 - **Deployed:** sih-farm-setu.vercel.app (root = `frontend`)
 - **No env vars required** for the demo. `DATA_GOV_API_KEY` is optional (falls back to public sample key)
 
@@ -39,20 +37,29 @@ npm run build     # verify before pushing
 ## Architecture
 
 ```
+src/data/
+  farmers.ts     — AgriStack-shaped registry with 60+ Kolar farmers, crop-sown plots, and assigned field partners
+public/data/
+  farmers.csv    — Identical CSV export for judges / live ingestion
+
 src/lib/engine/
   seed.ts        — deterministic demo data: 3 crops, 6 units, 3 buyers, 10 demo farmers
+  registry.ts    — AgriStack queries: alertTargets(crop), farmersForCrop(crop, role), partnersByRole
   predictor.ts   — 3-signal crash risk: arrivals 45% + price slide 40% + harvest season 15% → 0-100
   matching.ts    — haversine distance + capacity matching; offerPrice = max(9, crash+5)
-  index.ts       — getCrops, getCrop, getMatches, getOverview, alertText, DEMO_FARMERS
+  index.ts       — getCrops, getCrop, getMatches, getOverview, alertText, registry exports
 
 src/lib/
+  csv.ts         — dependency-free CSV parser and serializer
   speak.ts       — Web Speech API wrapper (voiceFor strict match, never wrong-voice fallback)
-  i18n.ts        — Lang "en"|"hi"|"kn", Mode "basic"|"app", all string keys
-  dispatch.ts    — BroadcastChannel + localStorage: officer→farmer handshake
+  i18n.ts        — Lang "en"|"hi"|"kn", Mode "basic"|"app", role & nearest-center strings
+  dispatch.ts    — 3-layer BroadcastChannel + localStorage: officer → field → farmer handshake
   baseUrl.ts     — LAN IP in dev, host header in prod (for QR codes)
   liveprices.ts  — SERVER-ONLY: real data.gov.in Agmarknet fetch + fallback snapshot
 
 src/components/
+  SchemeMap.tsx  — government infrastructure integration table + honest production gaps
+  RegistryUpload.tsx — client-side CSV drag & drop parser
   AlertCard.tsx  — farmer alert; mode="basic" (keypad) or "app" (tap buttons)
   Keypad.tsx     — 3×4 phone keypad, 1=Accept (green), 2=Decline (red)
   ValueChain.tsx — "why ₹9 when mandi is ₹3?" explanation (fresh→paste transformation)
@@ -60,10 +67,11 @@ src/components/
   LivePrices.tsx — presentational card for live mandi prices (props only, no server imports)
 
 src/app/
-  page.tsx       — scroll-driven landing (6 scenes: Hero→Glut→Crash→Reroute→Call→Sunrise)
-  admin/         — officer console (server component fetches live prices, passes to AdminConsole)
-  farmer/        — farmer app (basic phone default, smartphone toggle)
-  flow/          — 5-step scripted walkthrough demo
+  page.tsx       — scroll landing + 3 Doors (Officer / Field Partner / Farmer) + SchemeMap
+  admin/         — officer console with real AgriStack crop-specific counts
+  field/         — field partner portal (Krishi Sakhi / CSC VLE / FPO role switch & village roster)
+  farmer/        — farmer app with AgriStack identity & nearest-center no-tech fallback
+  flow/          — 5-step scripted walkthrough demo with field partner bridge
 ```
 
 ---
