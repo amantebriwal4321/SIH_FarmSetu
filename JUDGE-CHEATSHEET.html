@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kisan Setu Judge Cheat Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #F0EDE4;
+  --surface: #FAFAF6;
+  --ink: #2B2B24;
+  --ink2: #7A7868;
+  --ink3: #A09E90;
+  --green: #2E7D4E;
+  --green-bg: #DAF0E2;
+  --green-dark: #1B5E35;
+  --red: #C04040;
+  --red-bg: #F5DADA;
+  --amber: #B87D20;
+  --amber-bg: #F5ECDA;
+  --border: #D8D4C8;
+  --border-light: #E6E2D8;
+  --shadow: rgba(43,43,36,0.06);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg: #1C1B17;
+    --surface: #26251F;
+    --ink: #E4E0D4;
+    --ink2: #9E9B8C;
+    --ink3: #6A6860;
+    --green: #5ABF7A;
+    --green-bg: #1E2E22;
+    --green-dark: #8EDAA4;
+    --red: #E06060;
+    --red-bg: #2E1E1E;
+    --amber: #D4A040;
+    --amber-bg: #2E2818;
+    --border: #3A3830;
+    --border-light: #333028;
+    --shadow: rgba(0,0,0,0.2);
+  }
+}
+:root[data-theme="dark"]{
+  --bg: #1C1B17;
+  --surface: #26251F;
+  --ink: #E4E0D4;
+  --ink2: #9E9B8C;
+  --ink3: #6A6860;
+  --green: #5ABF7A;
+  --green-bg: #1E2E22;
+  --green-dark: #8EDAA4;
+  --red: #E06060;
+  --red-bg: #2E1E1E;
+  --amber: #D4A040;
+  --amber-bg: #2E2818;
+  --border: #3A3830;
+  --border-light: #333028;
+  --shadow: rgba(0,0,0,0.2);
+}
+
+*{box-sizing:border-box;margin:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'DM Sans',-apple-system,system-ui,sans-serif;
+  max-width:640px;margin:0 auto;padding:20px 16px 60px;
+  line-height:1.55;font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* — Header — */
+.header{margin-bottom:28px}
+.header-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:0.4px;
+  text-transform:uppercase;color:var(--green);margin-bottom:8px;
+}
+.header-badge::before{
+  content:'';width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+}
+h1{font-size:24px;font-weight:700;line-height:1.2;margin-bottom:6px;text-wrap:balance}
+.header-sub{font-size:13px;color:var(--ink2);line-height:1.5}
+
+/* — Sections — */
+.section{margin-top:32px}
+.section-label{
+  font-size:11px;font-weight:600;letter-spacing:0.6px;
+  text-transform:uppercase;color:var(--ink3);margin-bottom:10px;
+}
+.section-title{
+  font-size:17px;font-weight:700;line-height:1.3;margin-bottom:14px;
+  text-wrap:balance;
+}
+
+/* — Cards — */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border-light);
+  border-radius:8px;
+  padding:2px 0;
+  margin-bottom:12px;
+  box-shadow:0 1px 3px var(--shadow);
+}
+
+/* — Data rows — */
+.drow{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;gap:12px;
+  border-bottom:1px solid var(--border-light);
+}
+.drow:last-child{border-bottom:none}
+.drow-content{flex:1;min-width:0}
+.drow-name{font-size:13.5px;font-weight:600}
+.drow-detail{font-size:11.5px;color:var(--ink2);margin-top:1px}
+
+/* — Tags — */
+.tag{
+  display:inline-block;font-size:10px;font-weight:700;
+  padding:3px 9px;border-radius:20px;letter-spacing:0.3px;
+  text-transform:uppercase;white-space:nowrap;flex-shrink:0;
+}
+.tag-live{background:var(--green-bg);color:var(--green)}
+.tag-demo{background:var(--red-bg);color:var(--red)}
+.tag-hybrid{background:var(--amber-bg);color:var(--amber)}
+
+/* — Callouts (judge lines) — */
+.callout{
+  border-left:3px solid var(--green);
+  background:var(--green-bg);
+  padding:10px 14px;border-radius:0 6px 6px 0;
+  margin:14px 0;font-size:13px;line-height:1.55;
+  color:var(--ink);
+}
+.callout em{font-style:normal;font-weight:600}
+.callout-warn{
+  border-left-color:var(--red);background:var(--red-bg);
+  font-weight:600;font-size:12px;
+}
+
+/* — Formula — */
+.formula-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:14px 16px;margin:12px 0;
+  text-align:center;
+  font-family:'DM Mono',monospace;font-size:13.5px;font-weight:500;
+  letter-spacing:-0.2px;
+}
+
+/* — Signal cards — */
+.signal{
+  display:grid;grid-template-columns:44px 1fr;gap:10px;
+  padding:12px 14px;border-bottom:1px solid var(--border-light);
+  align-items:start;
+}
+.signal:last-child{border-bottom:none}
+.signal-w{font-size:20px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
+.signal-name{font-size:13.5px;font-weight:700;margin-bottom:4px}
+.signal-line{font-size:11.5px;color:var(--ink2);line-height:1.5;margin-top:2px}
+.signal-line b{color:var(--ink);font-weight:600}
+
+/* — Table — */
+.calc-table{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.calc-table th{
+  font-size:10px;text-transform:uppercase;letter-spacing:0.4px;
+  color:var(--ink3);font-weight:600;padding:8px 10px;text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.calc-table td{padding:7px 10px;border-bottom:1px solid var(--border-light)}
+.calc-table tr:last-child td{border-bottom:none}
+.calc-table .total td{font-weight:700;border-top:2px solid var(--border)}
+
+/* — Steps — */
+.steps{display:flex;flex-direction:column;gap:2px;padding:6px 0}
+.step{
+  display:grid;grid-template-columns:26px 1fr;gap:10px;
+  padding:8px 14px;align-items:start;
+}
+.step-n{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--green);color:#fff;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;flex-shrink:0;
+}
+.step-text{font-size:13px;line-height:1.5}
+.step-text b{font-weight:700}
+
+/* — Reason cards — */
+.reasons{padding:4px 14px 14px}
+.reason{padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px;line-height:1.5}
+.reason:last-child{border-bottom:none}
+.reason b{font-weight:700}
+.reason-n{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--border);color:var(--ink);
+  font-size:10px;font-weight:700;margin-right:6px;
+  vertical-align:middle;
+}
+
+/* — Source table — */
+.src-table{width:100%;border-collapse:collapse;font-size:12px}
+.src-table th{
+  font-size:10px;text-transform:uppercase;letter-spacing:0.4px;
+  color:var(--ink3);font-weight:600;padding:8px 10px;text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.src-table td{padding:7px 10px;border-bottom:1px solid var(--border-light);line-height:1.4}
+.src-table tr:last-child td{border-bottom:none}
+
+/* — Live steps list — */
+.live-list{padding:8px 14px 14px;font-size:13px}
+.live-item{padding:6px 0;border-bottom:1px solid var(--border-light);line-height:1.5}
+.live-item:last-child{border-bottom:none}
+.live-item b{font-weight:700}
+.live-note{
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+  font-weight:700;color:var(--green);font-size:12.5px;line-height:1.5;
+}
+
+@media(max-width:400px){
+  body{padding:16px 12px 48px;font-size:13px}
+  h1{font-size:21px}
+  .section-title{font-size:15.5px}
+  .signal{grid-template-columns:38px 1fr;gap:8px}
+  .signal-w{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">SIH 2026 Ready</div>
+  <h1>Kisan Setu Judge Cheat Sheet</h1>
+  <p class="header-sub">Every answer a judge can ask, structured for quick lookup. Keep this on your phone during the presentation.</p>
+</div>
+
+<!-- 1. REAL VS DEMO -->
+<div class="section">
+  <div class="section-label">Section 1</div>
+  <div class="section-title">What is real and what is demo</div>
+  <div class="card">
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">Today's mandi prices</div>
+        <div class="drow-detail">Fetched live from data.gov.in Agmarknet API, cached 1 hour</div>
+      </div>
+      <span class="tag tag-live">Live</span>
+    </div>
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">Government schemes</div>
+        <div class="drow-detail">PMFME, 10,000 FPO scheme, Operation Greens</div>
+      </div>
+      <span class="tag tag-live">Real</span>
+    </div>
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">Farmer registration process</div>
+        <div class="drow-detail">FPO registers + Kisan Mitra workers (existing govt infra)</div>
+      </div>
+      <span class="tag tag-live">Real</span>
+    </div>
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">Crash risk score (0-100)</div>
+        <div class="drow-detail">Real method with stated weights, running on demo data</div>
+      </div>
+      <span class="tag tag-hybrid">Hybrid</span>
+    </div>
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">Matching engine (crop to unit)</div>
+        <div class="drow-detail">Real haversine distance + capacity logic, demo units</div>
+      </div>
+      <span class="tag tag-hybrid">Hybrid</span>
+    </div>
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">60-day price crash curve</div>
+        <div class="drow-detail">Modelled data shaped like the real 2022 Kolar tomato crash</div>
+      </div>
+      <span class="tag tag-demo">Demo</span>
+    </div>
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">SHG/FPO processing units</div>
+        <div class="drow-detail">Real-type names and coordinates, not actual businesses</div>
+      </div>
+      <span class="tag tag-demo">Demo</span>
+    </div>
+    <div class="drow">
+      <div class="drow-content">
+        <div class="drow-name">Farmer names in pickup list</div>
+        <div class="drow-detail">Made up (no real farmer login in the prototype)</div>
+      </div>
+      <span class="tag tag-demo">Demo</span>
+    </div>
+  </div>
+  <div class="callout">
+    <em>Say this:</em> "Today's mandi prices are live from the government's own API. The crash history is a labelled replay of a real past crash. The method is real; the historical data is demo."
+  </div>
+</div>
+
+<!-- 2. HOW CRASH DETECTION WORKS -->
+<div class="section">
+  <div class="section-label">Section 2</div>
+  <div class="section-title">How the crash detection works</div>
+
+  <p style="font-size:13px;color:var(--ink2);margin-bottom:12px">We do not predict future prices. We score crash risk from three present-tense signals.</p>
+
+  <div class="formula-box">
+    risk = 0.45 &times; arrivals + 0.40 &times; price&nbsp;drop + 0.15 &times; season
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="signal">
+      <div class="signal-w">45%</div>
+      <div>
+        <div class="signal-name">Arrivals Surge</div>
+        <div class="signal-line"><b>What:</b> How much crop is flooding the mandi vs the normal baseline (average of the first 14 days)</div>
+        <div class="signal-line"><b>Math:</b> Arrivals = 3&times; normal &rarr; signal = 100. Normal &rarr; signal = 0</div>
+        <div class="signal-line"><b>Source:</b> Agmarknet daily arrivals (demo: modelled from real patterns)</div>
+      </div>
+    </div>
+    <div class="signal">
+      <div class="signal-w">40%</div>
+      <div>
+        <div class="signal-name">Price Slide</div>
+        <div class="signal-line"><b>What:</b> How fast the price fell over the last 7 days</div>
+        <div class="signal-line"><b>Math:</b> Fell 30% in 7 days &rarr; signal = 100. Price rose &rarr; signal = 0</div>
+        <div class="signal-line"><b>Source:</b> Agmarknet daily prices (live for today, demo for 60-day history)</div>
+      </div>
+    </div>
+    <div class="signal">
+      <div class="signal-w">15%</div>
+      <div>
+        <div class="signal-name">Harvest Season</div>
+        <div class="signal-line"><b>What:</b> Is this a known glut month for this crop in this district?</div>
+        <div class="signal-line"><b>Math:</b> Harvest month &rarr; 100, otherwise &rarr; 0</div>
+        <div class="signal-line"><b>Source:</b> Documented crop calendars (real, hard-coded)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:14px;margin-top:18px">Example: Tomato in Kolar, November</div>
+  <div class="card" style="padding:0;overflow-x:auto">
+    <table class="calc-table">
+      <tr><th>Signal</th><th>Today's reading</th><th>Score</th><th>Weighted</th></tr>
+      <tr><td>Arrivals</td><td>2.8&times; normal</td><td>90</td><td>0.45 &times; 90 = <b>40.5</b></td></tr>
+      <tr><td>Price slide</td><td>&minus;28% in 7 days</td><td>93</td><td>0.40 &times; 93 = <b>37.2</b></td></tr>
+      <tr><td>Season</td><td>November (harvest)</td><td>100</td><td>0.15 &times; 100 = <b>15.0</b></td></tr>
+      <tr class="total"><td colspan="3" style="text-align:right">Total risk score</td><td style="color:var(--red)">92.7 &rarr; HIGH</td></tr>
+    </table>
+  </div>
+
+  <div class="callout">
+    <em>Say this:</em> "We read three public signals and score how dangerous the situation looks right now. A doctor reads your vitals and says 'this is serious, act now.' Same idea. Transparent and checkable."
+  </div>
+  <div class="callout callout-warn">
+    Never say "we predict future prices." Always say "we detect crash risk from today's signals."
+  </div>
+</div>
+
+<!-- 3. WHY NOT ML -->
+<div class="section">
+  <div class="section-label">Section 3</div>
+  <div class="section-title">"Why not use ML to predict prices?"</div>
+  <div class="card">
+    <div class="reasons">
+      <div class="reason"><span class="reason-n">1</span><b>Trust.</b> Farmers and officers need to understand why the alert fired. Our weights are stated and checkable. A neural network can't explain itself.</div>
+      <div class="reason"><span class="reason-n">2</span><b>Data.</b> A price prediction model needs 5+ years of daily data per crop per district. That doesn't exist cleanly on the government's free API tier.</div>
+      <div class="reason"><span class="reason-n">3</span><b>Accountability.</b> If our score is wrong, you can check which signal was off. With a black box, you can only say "the model was wrong."</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. END TO END FLOW -->
+<div class="section">
+  <div class="section-label">Section 4</div>
+  <div class="section-title">The full flow, end to end</div>
+  <div class="card">
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><div class="step-text"><b>Data loads</b> &mdash; 60 days of price + arrivals history for this crop and district</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-text"><b>Predictor scores each day</b> &mdash; three signals combined into one 0-100 risk score, building a curve over time</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-text"><b>Score hits HIGH</b> &mdash; officer sees it on the dashboard with the crash chart and surplus tonnes at risk</div></div>
+      <div class="step"><div class="step-n">4</div><div class="step-text"><b>Officer clicks "Route surplus"</b> &mdash; matching engine finds nearby SHG/FPO units by distance and capacity</div></div>
+      <div class="step"><div class="step-n">5</div><div class="step-text"><b>Farmer gets a phone call</b> &mdash; in their language (English, Hindi, or Kannada), works on any phone including a keypad</div></div>
+      <div class="step"><div class="step-n">6</div><div class="step-text"><b>Farmer presses 1 to accept</b> &mdash; confirmation goes back to the officer console and the unit is notified</div></div>
+      <div class="step"><div class="step-n">7</div><div class="step-text"><b>FPO van collects from villages</b> &mdash; farmer travels zero or minimal distance</div></div>
+      <div class="step"><div class="step-n">8</div><div class="step-text"><b>Unit makes paste, pays &#8377;9/kg</b> &mdash; crop saved, farmer paid fairly, unit gets raw material</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. WHY ₹9 -->
+<div class="section">
+  <div class="section-label">Section 5</div>
+  <div class="section-title">"Why &#8377;9 when the mandi price is &#8377;3?"</div>
+  <div class="card">
+    <div class="reasons">
+      <div class="reason"><b>&#8377;3 is distress, not real supply.</b> In a glut, most crop rots unsold. Nobody is actually buying at &#8377;3. A processing unit can't build a paste line on collapsing spot lots.</div>
+      <div class="reason"><b>The unit doesn't sell it fresh.</b> Tomato becomes paste worth &#8377;48/kg that lasts months. &#8377;9 for raw crop is cheap for them.</div>
+      <div class="reason"><b>Both sides win.</b> Farmer gets 2.4&times; the crashing mandi price plus a guaranteed buyer. Unit gets steady, fresh, traceable supply for their factory.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. FARMER REGISTRATION -->
+<div class="section">
+  <div class="section-label">Section 6</div>
+  <div class="section-title">"How do farmers register without being technical?"</div>
+  <div class="card">
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><div class="step-text"><b>FPO paper register</b> &mdash; every FPO legally maintains a member list (name, phone, crops, land). Government requirement under the 10,000 FPO scheme.</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-text"><b>Kisan Mitra digitizes it</b> &mdash; government-employed village workers enter the register into the app on their phone. The farmer just confirms verbally.</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-text"><b>Seasonal crop update</b> &mdash; FPO coordinators already ask "what are you planting?" before sowing. We capture that answer digitally.</div></div>
+    </div>
+  </div>
+  <p style="font-size:13px;margin-top:8px"><b>Result:</b> Alerts are crop-specific. Tomato crash &rarr; only tomato farmers in that area get the call.</p>
+  <div class="callout">
+    <em>Say this:</em> "We didn't invent a new process. We digitized the paper register that already exists. The farmer never touches a screen."
+  </div>
+</div>
+
+<!-- 7. DATA SOURCES -->
+<div class="section">
+  <div class="section-label">Section 7</div>
+  <div class="section-title">Where every piece of data comes from</div>
+  <div class="card" style="padding:0;overflow-x:auto">
+    <table class="src-table">
+      <tr><th>Data</th><th>Source</th><th>Access method</th></tr>
+      <tr><td>Today's mandi prices</td><td>data.gov.in Agmarknet</td><td>Live API fetch, cached 1h, fallback snapshot</td></tr>
+      <tr><td>60-day price history</td><td>Modelled (seed.ts)</td><td>Shaped like real 2022 Kolar crash</td></tr>
+      <tr><td>Arrivals data</td><td>Modelled (seed.ts)</td><td>Built from real harvest arrival patterns</td></tr>
+      <tr><td>Harvest calendar</td><td>Documented seasons</td><td>Hard-coded known months per crop</td></tr>
+      <tr><td>Processing units</td><td>Illustrative</td><td>Real-type SHG/FPO names, real coordinates</td></tr>
+      <tr><td>Government schemes</td><td>MoFPI / MoA official</td><td>PMFME, 10k FPO, Operation Greens</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 8. GOING LIVE -->
+<div class="section">
+  <div class="section-label">Section 8</div>
+  <div class="section-title">What it takes to go fully live</div>
+  <div class="card">
+    <div class="live-list">
+      <div class="live-item"><b>1. Daily arrivals feed from Agmarknet</b> replaces the modelled 60-day data. No code change needed.</div>
+      <div class="live-item"><b>2. Real unit directory</b> from PMFME / Operation Greens cluster lists for one district.</div>
+      <div class="live-item"><b>3. Real FPO member data</b> from registers already maintained under the 10,000 FPO scheme.</div>
+      <div class="live-note">Every piece of data we need is already collected by the government. We don't need any new data source.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
