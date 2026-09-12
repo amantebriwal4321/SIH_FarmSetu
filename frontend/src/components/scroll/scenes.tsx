@@ -26,11 +26,16 @@ export function HeroScene() {
           {[120, 300, 520, 760, 980, 1200, 1360].map((x, i) => <Wheat key={i} x={x} y={150} s={1.5} delay={i * 0.3} />)}
         </svg>
         <Grain />
-        <div style={{ position: "absolute", left: "7%", top: "24%", maxWidth: 900, opacity: fade, transform: `translateY(${-p * 30}px)` }}>
+        <div style={{ position: "absolute", left: "7%", top: "22%", maxWidth: 720, opacity: fade, transform: `translateY(${-p * 30}px)` }}>
           <div className="eyebrow" style={{ color: "#7a4a1e" }}>Agriculture · FoodTech · Rural Development</div>
-          <h1 className="display" style={{ fontSize: "clamp(34px,6vw,68px)", lineHeight: 1.02, marginTop: 14, color: "#241a10", textShadow: "0 1px 20px rgba(255,240,200,.5)" }}>
-            The farmer gets ₹5.<br />You pay ₹25.<br />And the crop still <span className="mark">rots</span>.
+          <h1 className="display" style={{ fontSize: "clamp(44px,8vw,92px)", lineHeight: 0.98, marginTop: 14, color: "#241a10", textShadow: "0 1px 20px rgba(255,240,200,.5)" }}>
+            Glut to <span className="mark">Value</span>.
           </h1>
+          <p style={{ fontSize: "clamp(15px,1.9vw,21px)", color: "#3a2a18", marginTop: 18, maxWidth: 600, lineHeight: 1.5, fontWeight: 500 }}>
+            We turn a crashing crop into a product that lasts — and a fair income for the farmer.
+            Kisan Setu spots the crash, routes the surplus to a nearby unit, and calls the farmer
+            in their own language, before it&apos;s ever dumped.
+          </p>
         </div>
       </Stage>
     </section>
