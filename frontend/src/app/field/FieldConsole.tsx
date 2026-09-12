@@ -23,10 +23,13 @@ import {
   type MatchTotals,
   type AlertBundle,
 } from "@/lib/engine";
-import { speak, stopSpeak } from "@/lib/speak";
+import { stopSpeak } from "@/lib/speak";
 import { STR, loadLang, type Lang } from "@/lib/i18n";
 import Toast from "@/components/Toast";
 import RegistryUpload from "@/components/RegistryUpload";
+import PhoneFrame from "@/components/PhoneFrame";
+import IncomingCall from "@/components/IncomingCall";
+import AlertCard from "@/components/AlertCard";
 
 type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle };
 
@@ -57,6 +60,8 @@ export default function FieldConsole({
   const [activeDispatch, setActiveDispatch] = useState<Dispatch | null>(null);
   const [bookedFarmers, setBookedFarmers] = useState<Record<string, { tonnes: number; method: string }>>({});
   const [toast, setToast] = useState<string>("");
+  const [callFarmer, setCallFarmer] = useState<FarmerRecord | null>(null);
+  const [callPhase, setCallPhase] = useState<"ringing" | "details">("ringing");
   const [lang, setLang] = useState<Lang>("kn"); // default to local Kannada for field partner
   const [showDemoTools, setShowDemoTools] = useState<boolean>(false);
 
@@ -119,10 +124,7 @@ export default function FieldConsole({
     partnerName: currentPartner.name,
   });
 
-  const handleFarmerAction = (
-    farmer: FarmerRecord,
-    method: "call" | "visited" | "center"
-  ) => {
+  const bookFarmer = (farmer: FarmerRecord, method: "call" | "visited" | "center") => {
     const estTonnes = Math.round(farmer.plotAcres * 1.5 * 10) / 10;
     const pickup: PickupFarmer = {
       farmerId: farmer.farmerId,
@@ -131,27 +133,36 @@ export default function FieldConsole({
       tonnes: estTonnes,
       method,
     };
-
-    setBookedFarmers((prev) => ({
-      ...prev,
-      [farmer.farmerId]: { tonnes: estTonnes, method },
-    }));
-
+    setBookedFarmers((prev) => ({ ...prev, [farmer.farmerId]: { tonnes: estTonnes, method } }));
     if (activeDispatch) {
       respondDispatch(activeDispatch.id, "accepted", pickup, method);
     } else {
       respondDispatch(`${selectedCrop}-field-${Date.now()}`, "accepted", pickup, method);
     }
+  };
 
+  const handleFarmerAction = (
+    farmer: FarmerRecord,
+    method: "call" | "visited" | "center"
+  ) => {
     if (method === "call") {
-      const msg = d.alert.texts[lang] || d.alert.texts.en;
-      speak(msg, lang);
-      setToast(`📞 Calling ${farmer.name}... Spoke offer ₹${d.alert.offer}/kg`);
-    } else if (method === "visited") {
-      setToast(`🚶 Marked ${farmer.name} visited in ${farmer.village}`);
-    } else {
-      setToast(`🏢 ${farmer.name} booked in-person at center`);
+      // Show the phone interface — the farmer's ringing call, then the spoken alert.
+      setCallFarmer(farmer);
+      setCallPhase("ringing");
+      return;
     }
+    bookFarmer(farmer, method);
+    if (method === "visited") setToast(`🚶 Marked ${farmer.name} visited in ${farmer.village}`);
+    else setToast(`🏢 ${farmer.name} booked in-person at center`);
+  };
+
+  const closeCall = () => { stopSpeak(); setCallFarmer(null); setCallPhase("ringing"); };
+  const acceptCall = () => {
+    if (callFarmer) {
+      bookFarmer(callFarmer, "call");
+      setToast(`📞 ${callFarmer.name} accepted the offer — booked`);
+    }
+    closeCall();
   };
 
   const bookedCount = Object.keys(bookedFarmers).length;
@@ -451,6 +462,34 @@ export default function FieldConsole({
           </Link>
         </footer>
       </div>
+
+      {/* Phone interface — opens when the field partner taps Call on a farmer */}
+      {callFarmer && (
+        <div
+          onClick={closeCall}
+          style={{ position: "fixed", inset: 0, background: "rgba(10,20,14,0.62)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 16, gap: 12 }}
+        >
+          <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, textAlign: "center" }}>
+            📞 Calling {callFarmer.name} · {callFarmer.village}
+            <span style={{ opacity: 0.7, fontWeight: 400 }}> · {callFarmer.farmerId}</span>
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <PhoneFrame height={520}>
+              {callPhase === "ringing" ? (
+                <IncomingCall cropName={d.alert.cropNames[lang]} lang={lang} onAnswer={() => setCallPhase("details")} onDecline={closeCall} />
+              ) : (
+                <AlertCard a={d.alert} lang={lang} status="pending" autoPlay mode="basic" onAccept={acceptCall} onDecline={closeCall} />
+              )}
+            </PhoneFrame>
+          </div>
+          <button
+            onClick={closeCall}
+            style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 999, padding: "6px 18px", fontSize: 13, cursor: "pointer" }}
+          >
+            Close
+          </button>
+        </div>
+      )}
 
       {toast && <Toast message={toast} onDone={() => setToast("")} />}
     </div>
