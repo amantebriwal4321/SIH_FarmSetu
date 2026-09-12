@@ -24,7 +24,7 @@ import {
   type AlertBundle,
 } from "@/lib/engine";
 import { stopSpeak } from "@/lib/speak";
-import { STR, loadLang, type Lang } from "@/lib/i18n";
+import { STR, loadLang, type Lang, type Mode } from "@/lib/i18n";
 import Toast from "@/components/Toast";
 import RegistryUpload from "@/components/RegistryUpload";
 import PhoneFrame from "@/components/PhoneFrame";
@@ -62,6 +62,7 @@ export default function FieldConsole({
   const [toast, setToast] = useState<string>("");
   const [callFarmer, setCallFarmer] = useState<FarmerRecord | null>(null);
   const [callPhase, setCallPhase] = useState<"ringing" | "details">("ringing");
+  const [callMode, setCallMode] = useState<Mode>("basic"); // keypad vs smartphone in the call
   const [lang, setLang] = useState<Lang>("kn"); // default to local Kannada for field partner
   const [showDemoTools, setShowDemoTools] = useState<boolean>(false);
 
@@ -473,12 +474,32 @@ export default function FieldConsole({
             📞 Calling {callFarmer.name} · {callFarmer.village}
             <span style={{ opacity: 0.7, fontWeight: 400 }}> · {callFarmer.farmerId}</span>
           </div>
+          {/* keypad vs smartphone toggle for the phone interface */}
+          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: 8 }}>
+            {(["basic", "app"] as Mode[]).map((m) => {
+              const on = callMode === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setCallMode(m)}
+                  style={{
+                    padding: "5px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+                    border: `1px solid ${on ? "#8ed46a" : "rgba(255,255,255,0.35)"}`,
+                    background: on ? "#8ed46a" : "rgba(255,255,255,0.12)",
+                    color: on ? "#0a2416" : "#eafaf0",
+                  }}
+                >
+                  {m === "basic" ? STR[lang].modeBasic : STR[lang].modeApp}
+                </button>
+              );
+            })}
+          </div>
           <div onClick={(e) => e.stopPropagation()}>
             <PhoneFrame height={520}>
               {callPhase === "ringing" ? (
                 <IncomingCall cropName={d.alert.cropNames[lang]} lang={lang} onAnswer={() => setCallPhase("details")} onDecline={closeCall} />
               ) : (
-                <AlertCard a={d.alert} lang={lang} status="pending" autoPlay mode="basic" onAccept={acceptCall} onDecline={closeCall} />
+                <AlertCard a={d.alert} lang={lang} status="pending" autoPlay mode={callMode} onAccept={acceptCall} onDecline={closeCall} />
               )}
             </PhoneFrame>
           </div>
