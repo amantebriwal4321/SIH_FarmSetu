@@ -1,9 +1,10 @@
 // Server-only catalog. Reads crops and processing units from DynamoDB when
-// DYNAMODB_TABLE_NAME and AWS_REGION are set. Any miss (unset env, empty table,
-// network or auth error) returns the static seed so the demo still runs.
+// DYNAMODB_TABLE_NAME and a region (FARMSETU_AWS_REGION, else AWS_REGION) are set.
+// Any miss (unset env, empty table, network or auth error) returns the static seed.
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { awsClientConfig } from "@/lib/aws/config";
 import { createEngine, type Engine } from "@/lib/engine";
 import { CROPS, UNITS, type Crop, type SeriesRow, type Unit } from "@/lib/engine/seed";
 
@@ -89,11 +90,11 @@ async function queryKind(doc: DynamoDBDocumentClient, table: string, pk: string)
 
 export async function loadCatalog(): Promise<{ crops: Crop[]; units: Unit[]; source: CatalogSource }> {
   const table = process.env.DYNAMODB_TABLE_NAME;
-  const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
-  if (!table || !region) return { crops: CROPS, units: UNITS, source: "static" };
+  const aws = awsClientConfig();
+  if (!table || !aws) return { crops: CROPS, units: UNITS, source: "static" };
 
   try {
-    const doc = DynamoDBDocumentClient.from(new DynamoDBClient({ region }));
+    const doc = DynamoDBDocumentClient.from(new DynamoDBClient(aws));
     const cropItems = await queryKind(doc, table, "CROP");
     const unitItems = await queryKind(doc, table, "UNIT");
     const crops = cropItems.map(asCrop).filter((c): c is Crop => c !== null);

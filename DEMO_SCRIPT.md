@@ -32,7 +32,7 @@ Point at the catalog line. "Crops and units load from DynamoDB only when `DYNAMO
 
 Open `/farmer`, switch to Hindi, press play.
 
-"Hindi tries Amazon Polly, voice Kajal, hi-IN, through `/api/speak`. With no `AWS_REGION`, the route returns a fallback and the browser voice speaks. A real Polly clip labels itself Amazon Polly. Kannada and English never call Polly."
+"Hindi tries Amazon Polly, voice Kajal, hi-IN, through `/api/speak`. With no `FARMSETU_AWS_REGION` (and no `AWS_REGION`), the route returns a fallback and the browser voice speaks. A real Polly clip labels itself Amazon Polly. Kannada and English never call Polly."
 
 Click route surplus. "Kg kept out of waste is the share of this crop's surplus the units can take this week. Computed here, not a survey."
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PollyClient, SynthesizeSpeechCommand, type Engine, type VoiceId } from "@aws-sdk/client-polly";
+import { awsClientConfig } from "@/lib/aws/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,14 +25,14 @@ export async function POST(request: Request) {
   const text = typeof payload.text === "string" ? payload.text.replace(/\s+/g, " ").trim() : "";
   if (!text) return fallback("empty");
 
-  const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
-  if (!region) return fallback("no-aws");
+  const aws = awsClientConfig();
+  if (!aws) return fallback("no-aws");
 
   const voiceId = (process.env.POLLY_VOICE_ID || "Kajal") as VoiceId;
   const engine = (process.env.POLLY_ENGINE || (voiceId === "Aditi" ? "standard" : "neural")) as Engine;
 
   try {
-    const polly = new PollyClient({ region });
+    const polly = new PollyClient(aws);
     const out = await polly.send(new SynthesizeSpeechCommand({
       Text: text.slice(0, MAX_CHARS),
       OutputFormat: "mp3",

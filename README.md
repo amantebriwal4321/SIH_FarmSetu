@@ -37,7 +37,7 @@ flowchart LR
   Officer --> Next
   Farmer --> Next
   Next -->|always available| Local
-  Next -->|Hindi audio if AWS_REGION is set| Polly
+  Next -->|Hindi audio if FARMSETU_AWS_REGION is set| Polly
   Next -->|crops and units if DYNAMODB_TABLE_NAME is set| DDB
   Officer -->|POST series if NEXT_PUBLIC_RISK_API_URL is set| APIGW
   APIGW --> Lambda
@@ -52,13 +52,13 @@ If an env var is missing, or the AWS call fails, that feature falls back. The de
 
 | Service | What it does here | When it is used |
 |---|---|---|
-| Amazon Polly | Synthesizes the Hindi alert (voice Kajal, neural, hi-IN, or Aditi, standard) | `POST /api/speak` when `AWS_REGION` is set |
+| Amazon Polly | Synthesizes the Hindi alert (voice Kajal, neural, hi-IN, or Aditi, standard) | `POST /api/speak` when `FARMSETU_AWS_REGION` or `AWS_REGION` is set |
 | AWS Lambda | Runs the same 0 to 100 risk scorer as the app | API Gateway `POST /risk` |
 | Amazon API Gateway | HTTP API in front of that Lambda | Browser calls `NEXT_PUBLIC_RISK_API_URL` |
-| Amazon DynamoDB | Stores crops (with the arrivals series) and processing units | Server catalog when `DYNAMODB_TABLE_NAME` is set |
-| Amazon Bedrock | Optional two-sentence Hindi explanation of a score | `POST /api/explain` when `BEDROCK_MODEL_ID` is set |
+| Amazon DynamoDB | Stores crops (with the arrivals series) and processing units | Server catalog when `DYNAMODB_TABLE_NAME` and a region are set |
+| Amazon Bedrock | Optional two-sentence Hindi explanation of a score | `POST /api/explain` when `BEDROCK_MODEL_ID` and a region are set |
 
-Polly, DynamoDB, and Bedrock are called from the Next.js server with the AWS SDK default credential chain. The Lambda only does the math. It does not read the table.
+Polly, DynamoDB, and Bedrock run in the Next.js server. A region of `FARMSETU_AWS_REGION` (else `AWS_REGION`) turns them on. When `FARMSETU_AWS_ACCESS_KEY_ID` and `FARMSETU_AWS_SECRET_ACCESS_KEY` are both set, those keys are passed to the SDK. The standard key names are the fallback. If neither pair is set, the SDK uses its default credential chain. The Lambda only does the math. It does not read the table.
 
 Nothing in this repo was deployed to an AWS account. Live Polly, Lambda invoke, DynamoDB, and Bedrock calls are untested here. The fallbacks and the Lambda parity check were run locally. See [SUBMISSION.md](SUBMISSION.md).
 
@@ -118,12 +118,14 @@ Seed the table with the same crops and units the app already ships:
 
 ```bash
 cd frontend
-export AWS_REGION=ap-south-1
+export FARMSETU_AWS_REGION=ap-south-1
+export FARMSETU_AWS_ACCESS_KEY_ID=...
+export FARMSETU_AWS_SECRET_ACCESS_KEY=...
 export DYNAMODB_TABLE_NAME=kisan-setu-catalog-kisan-setu
 npm run seed:dynamo
 ```
 
-That runs `frontend/scripts/seed-dynamodb.mts`. It refuses to start if those two variables are missing.
+`AWS_REGION` still works for this script when `FARMSETU_AWS_REGION` is unset. Both key vars must be set together before the script passes them to the SDK. Otherwise it uses the default credential chain. The script is `frontend/scripts/seed-dynamodb.mts`. It refuses to start if the region or the table name is missing.
 
 Attach [aws/iam-app-policy.json](aws/iam-app-policy.json) to the IAM user or role that the Next.js server uses. That policy allows `polly:SynthesizeSpeech`, DynamoDB query and batch write on `kisan-setu-catalog-*`, and Bedrock `InvokeModel` plus `Converse`. The Lambda execution role from SAM only needs CloudWatch logs.
 
@@ -133,18 +135,19 @@ Copy [frontend/.env.example](frontend/.env.example) to `frontend/.env.local`. Al
 
 | Variable | Purpose |
 |---|---|
-| `AWS_REGION` | Region for Polly, DynamoDB, and Bedrock. Unset means those three stay local. |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Only if you are not on an IAM role or SSO. Do not commit them. |
+| `FARMSETU_AWS_REGION` | Region for Polly, DynamoDB, and Bedrock. This is the one to set on Vercel. Unset, and with no `AWS_REGION`, those three stay local. |
+| `FARMSETU_AWS_ACCESS_KEY_ID`, `FARMSETU_AWS_SECRET_ACCESS_KEY` | Passed to the SDK only when both are set. Do not commit them. |
+| `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Local fallbacks, read only when the matching `FARMSETU_` var is unset. Vercel reserves these and overwrites `AWS_REGION`, so do not use them there. |
 | `POLLY_VOICE_ID` | `Kajal` (default, neural, hi-IN) or `Aditi` (standard, hi-IN). |
 | `POLLY_ENGINE` | Optional. Defaults to `neural`, or `standard` when the voice is Aditi. |
 | `DYNAMODB_TABLE_NAME` | Catalog table from the stack output. |
 | `NEXT_PUBLIC_RISK_API_URL` | `RiskApiUrl` output. The officer console POSTs the series there. |
 | `BEDROCK_MODEL_ID` | Optional. Example: `amazon.nova-micro-v1:0`. Enable the model in the Bedrock console first. |
-| `BEDROCK_REGION` | Optional. Defaults to `AWS_REGION`. |
+| `BEDROCK_REGION` | Optional. Defaults to `FARMSETU_AWS_REGION`, then `AWS_REGION`. |
 
 Restart `npm run dev` after edits. `NEXT_PUBLIC_RISK_API_URL` is inlined at build time, so production needs a rebuild after you set it.
 
-On Vercel, set the root directory to `frontend`. Add the same env vars in the project settings if you want the hosted app to call AWS. The app still deploys with zero env vars.
+On Vercel, set the root directory to `frontend`. In project settings set `FARMSETU_AWS_REGION`, `FARMSETU_AWS_ACCESS_KEY_ID`, and `FARMSETU_AWS_SECRET_ACCESS_KEY` (plus the table name, risk URL, and optional Bedrock model). Do not set `AWS_REGION` or the standard key names. Vercel reserves them and overwrites `AWS_REGION` at runtime. The app still deploys with zero env vars.
 
 ## What talks to AWS in the UI
 

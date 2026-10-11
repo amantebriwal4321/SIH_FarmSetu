@@ -6,17 +6,18 @@
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { BatchWriteCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { awsClientConfig } from "../src/lib/aws/config.ts";
 import { CROPS, UNITS } from "../src/lib/engine/seed.ts";
 
 const table = process.env.DYNAMODB_TABLE_NAME;
-const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
+const aws = awsClientConfig();
 
-if (!table || !region) {
-  console.error("Set AWS_REGION and DYNAMODB_TABLE_NAME (the CatalogTableName stack output).");
+if (!table || !aws) {
+  console.error("Set FARMSETU_AWS_REGION (or AWS_REGION) and DYNAMODB_TABLE_NAME (the CatalogTableName stack output).");
   process.exit(1);
 }
 
-const doc = DynamoDBDocumentClient.from(new DynamoDBClient({ region }));
+const doc = DynamoDBDocumentClient.from(new DynamoDBClient(aws));
 
 const items = [
   ...CROPS.map((c) => ({
@@ -64,4 +65,4 @@ for (let i = 0; i < items.length; i += 25) {
   }
 }
 
-console.log(`Seeded ${CROPS.length} crops and ${UNITS.length} units into ${table} (${region}).`);
+console.log(`Seeded ${CROPS.length} crops and ${UNITS.length} units into ${table} (${aws.region}).`);

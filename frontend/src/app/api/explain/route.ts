@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 import { templateExplanation, type ExplainInput } from "@/lib/explain";
+import { awsClientConfig } from "@/lib/aws/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,8 +34,8 @@ export async function POST(request: Request) {
 
   const template = templateExplanation(input);
   const modelId = process.env.BEDROCK_MODEL_ID;
-  const region = process.env.BEDROCK_REGION || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
-  if (!modelId || !region) {
+  const aws = awsClientConfig(process.env.BEDROCK_REGION);
+  if (!modelId || !aws) {
     return NextResponse.json({ text: template, source: "template", reason: "no-bedrock" });
   }
 
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
   ].join("\n");
 
   try {
-    const client = new BedrockRuntimeClient({ region });
+    const client = new BedrockRuntimeClient(aws);
     const out = await client.send(new ConverseCommand({
       modelId,
       messages: [{ role: "user", content: [{ text: prompt }] }],
