@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#e8f2ea"/>
+  <rect x="80" y="80" width="1040" height="560" rx="16" fill="#0f3d24"/>
+  <text x="120" y="180" font-family="sans-serif" font-size="28" fill="#b7e4c7">Screenshot placeholder</text>
+  <text x="120" y="260" font-family="sans-serif" font-size="48" fill="#eafaf0">Farmer alert · /farmer</text>
+  <text x="120" y="330" font-family="sans-serif" font-size="24" fill="#d8f3dc">Drop a real capture at docs/screenshots/farmer.png</text>
+  <text x="120" y="390" font-family="sans-serif" font-size="22" fill="#d8f3dc">Hindi alert. Polly label shows only after a real synthesize call.</text>
+</svg>

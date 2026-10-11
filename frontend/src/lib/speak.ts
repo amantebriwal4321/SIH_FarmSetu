@@ -24,6 +24,23 @@ export function hasVoiceFor(lang: string): boolean {
   return !!voiceFor(lang);
 }
 
+// Amazon Polly audio, when /api/speak returns mp3. stopSpeak/pause/resume
+// cover both this clip and the browser voice so Accept still cuts the alert.
+let pollyAudio: HTMLAudioElement | null = null;
+
+export async function playAudioBlob(blob: Blob, onEnd?: () => void) {
+  stopSpeak();
+  const url = URL.createObjectURL(blob);
+  const el = new Audio(url);
+  pollyAudio = el;
+  el.onended = () => {
+    URL.revokeObjectURL(url);
+    if (pollyAudio === el) pollyAudio = null;
+    onEnd?.();
+  };
+  await el.play();
+}
+
 export function speak(text: string, lang = "hi-IN", onEnd?: () => void) {
   if (!canSpeak()) {
     onEnd?.();
@@ -64,10 +81,18 @@ export function speak(text: string, lang = "hi-IN", onEnd?: () => void) {
 }
 
 export function pauseSpeak() {
+  if (pollyAudio && !pollyAudio.paused) {
+    pollyAudio.pause();
+    return;
+  }
   if (canSpeak()) window.speechSynthesis.pause();
 }
 
 export function resumeSpeak() {
+  if (pollyAudio && pollyAudio.paused) {
+    void pollyAudio.play();
+    return;
+  }
   if (canSpeak()) window.speechSynthesis.resume();
 }
 
@@ -77,4 +102,12 @@ export function isSpeaking() {
 
 export function stopSpeak() {
   if (canSpeak()) window.speechSynthesis.cancel();
+  if (pollyAudio) {
+    const el = pollyAudio;
+    pollyAudio = null;
+    el.onended = null;
+    el.pause();
+    el.removeAttribute("src");
+    el.load();
+  }
 }

@@ -27,14 +27,14 @@ export function HeroScene() {
         </svg>
         <Grain />
         <div style={{ position: "absolute", left: "7%", top: "22%", maxWidth: 720, opacity: fade, transform: `translateY(${-p * 30}px)` }}>
-          <div className="eyebrow" style={{ color: "#7a4a1e" }}>Agriculture · FoodTech · Rural Development</div>
+          <div className="eyebrow" style={{ color: "#7a4a1e" }}>Waste and energy · keep the harvest edible</div>
           <h1 className="display" style={{ fontSize: "clamp(44px,8vw,92px)", lineHeight: 0.98, marginTop: 14, color: "#241a10", textShadow: "0 1px 20px rgba(255,240,200,.5)" }}>
             Glut to <span className="mark">Value</span>.
           </h1>
           <p style={{ fontSize: "clamp(15px,1.9vw,21px)", color: "#3a2a18", marginTop: 18, maxWidth: 600, lineHeight: 1.5, fontWeight: 500 }}>
-            We turn a crashing crop into a product that lasts — and a fair income for the farmer.
-            Kisan Setu spots the crash, routes the surplus to a nearby unit, and calls the farmer
-            in their own language, before it&apos;s ever dumped.
+            Surplus that nobody routes becomes food waste.
+            Kisan Setu scores the crash, sends the crop to a nearby processing unit, and calls the farmer
+            in their own language before it is dumped.
           </p>
         </div>
       </Stage>
@@ -43,10 +43,10 @@ export function HeroScene() {
 }
 
 // ---------------------------------------------------------------- Glut
-export function GlutScene() {
+export function GlutScene({ surplusTonnes = 0 }: { surplusTonnes?: number }) {
   const [ref, p] = useScrollProgress<HTMLElement>();
   const grow = range(p, 0.1, 0.85);
-  const value = lerp(0, 1.5, grow).toFixed(2);
+  const value = Math.round(lerp(0, surplusTonnes, grow));
   const pile = Array.from({ length: 22 });
   return (
     <section ref={ref} style={{ height: "220vh", position: "relative" }}>
@@ -65,9 +65,11 @@ export function GlutScene() {
         </svg>
         <Grain />
         <div style={{ position: "absolute", left: 0, right: 0, top: "16%", textAlign: "center", padding: "0 24px" }}>
-          <h2 className="display" style={{ fontSize: "clamp(26px,4.6vw,46px)", color: "#3a2610" }}>Every year, India dumps</h2>
-          <div className="kpi-num" style={{ fontSize: "clamp(44px,9vw,104px)", color: "#b4291c", lineHeight: 1 }}>₹{value} lakh cr</div>
-          <p style={{ fontSize: 17, color: "#5a4326", marginTop: 8 }}>of food. Perfectly good crops, left to rot.</p>
+          <h2 className="display" style={{ fontSize: "clamp(26px,4.6vw,46px)", color: "#3a2610" }}>Left unsold, this surplus is waste</h2>
+          <div className="kpi-num" style={{ fontSize: "clamp(44px,9vw,104px)", color: "#b4291c", lineHeight: 1 }}>{value.toLocaleString("en-IN")} t</div>
+          <p style={{ fontSize: 17, color: "#5a4326", marginTop: 8, maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}>
+            Computed from this demo&apos;s Kolar arrivals, above a normal early-season week. Not a national estimate.
+          </p>
         </div>
       </Stage>
     </section>
@@ -104,38 +106,49 @@ export function CrashScene() {
 }
 
 // ---------------------------------------------------------------- Reroute (PEAK + signature)
-export function RerouteScene() {
+export function RerouteScene({
+  rupees = 0,
+  kg = 0,
+  unitCount = 0,
+}: {
+  rupees?: number;
+  kg?: number;
+  unitCount?: number;
+}) {
   const [ref, p] = useScrollProgress<HTMLElement>();
   const go = range(p, 0.15, 0.85);
-  const units = [[150, 90], [470, 110], [120, 250], [500, 240], [310, 60], [320, 320]];
+  const dots = [[150, 90], [470, 110], [120, 250], [500, 240], [310, 60], [320, 320]];
   return (
     <section ref={ref} style={{ height: "300vh", position: "relative" }}>
       <Stage>
         <Sky stops="#e88a63 0%, #a95f6e 55%, #5a3a52 100%" />
         <Grain opacity={0.08} />
         <div style={{ position: "absolute", left: 0, right: 0, top: "9%", textAlign: "center", padding: "0 24px" }}>
-          <div className="eyebrow" style={{ color: "#ffd9a8" }}>The rescue — scroll to route it</div>
+          <div className="eyebrow" style={{ color: "#ffd9a8" }}>The rescue. Scroll to route it.</div>
           <h2 className="display" style={{ fontSize: "clamp(26px,4.6vw,48px)", color: "#fff", marginTop: 6 }}>We reroute the surplus to nearby units, before it rots.</h2>
         </div>
         <svg viewBox="0 0 620 380" style={{ position: "absolute", left: "50%", top: "40%", width: "min(560px,86vw)", transform: "translate(-50%,-40%)" }}>
-          {units.map(([x, y], i) => {
+          {dots.map(([x, y], i) => {
             const f = range(p, 0.15 + i * 0.05, 0.55 + i * 0.05);
             return <line key={"l" + i} x1={310} y1={190} x2={x} y2={y} stroke="#8ed46a" strokeWidth="3" strokeLinecap="round" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - f} markerEnd="url(#ar)" />;
           })}
           <defs><marker id="ar" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8ed46a" /></marker></defs>
-          {units.map(([x, y], i) => {
+          {dots.map(([x, y], i) => {
             const f = range(p, 0.15 + i * 0.05, 0.55 + i * 0.05);
             return <circle key={"u" + i} cx={x} cy={y} r={9} fill="#8ed46a" opacity={0.35 + f * 0.65} />;
           })}
           <circle cx={310} cy={190} r={15} fill="#e4483d" stroke="#fff" strokeWidth="3" />
         </svg>
         <div style={{ position: "absolute", left: 0, right: 0, bottom: "12%", display: "flex", justifyContent: "center", gap: 18, flexWrap: "wrap", padding: "0 20px" }}>
-          {[["Rupees saved", inr(1191400 * go)], ["Kg rescued", Math.round(230000 * go).toLocaleString("en-IN")], ["Units engaged", String(Math.round(6 * go))]].map(([l, v]) => (
+          {[["Rupees if sold, not dumped", inr(rupees * go)], ["Kg kept out of waste", Math.round(kg * go).toLocaleString("en-IN")], ["Units that can take it", String(Math.round(unitCount * go))]].map(([l, v]) => (
             <div key={l} style={{ background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.2)", borderRadius: 14, padding: "12px 20px", textAlign: "center", minWidth: 150 }}>
               <div className="kpi-num" style={{ fontSize: 26, color: "#eafaf0" }}>{v}</div>
               <div style={{ fontSize: 12, color: "#ffe9c8", marginTop: 2 }}>{l}</div>
             </div>
           ))}
+        </div>
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: "6%", textAlign: "center", fontSize: 12, color: "#ffe9c8", padding: "0 20px" }}>
+          Computed from this demo&apos;s Kolar series and unit capacities. The scroll only moves the numbers.
         </div>
       </Stage>
     </section>

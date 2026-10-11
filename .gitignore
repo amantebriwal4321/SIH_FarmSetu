@@ -20,3 +20,6 @@ frontend/.turbo/
 # misc
 .DS_Store
 *.log
+
+# AWS SAM build output
+aws/.aws-sam/

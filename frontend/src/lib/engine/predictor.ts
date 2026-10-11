@@ -1,4 +1,6 @@
 // Transparent, rule-based crash-risk predictor (ported from backend/app/predictor.py).
+// The Lambda copy lives in aws/lambda/risk/score.mjs. Keep the two in step.
+// aws/scripts/check-risk-parity.mjs checks them.
 // We never predict a future price — only a 0-100 "how likely is a crash right now" score
 // from three stated signals combined with fixed, public weights.
 

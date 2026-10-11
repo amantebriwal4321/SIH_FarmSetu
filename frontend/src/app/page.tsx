@@ -4,10 +4,14 @@ import { HeroScene, GlutScene, CrashScene, RerouteScene, CallScene, SunriseScene
 import { Ribbon } from "@/components/scroll/world";
 import Reveal from "@/components/Reveal";
 import SchemeMap from "@/components/SchemeMap";
-import { getOverview, inr, num } from "@/lib/engine";
+import { inr, num, packAll } from "@/lib/engine";
+import { loadEngine } from "@/lib/aws/catalog";
 
-export default function Page() {
-  const o = getOverview();
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  const { engine } = await loadEngine();
+  const o = packAll(engine).overview;
   return (
     <>
       <TopBar />
@@ -15,9 +19,9 @@ export default function Page() {
       <main className="flex-1">
         {/* The cinematic scroll story */}
         <HeroScene />
-        <GlutScene />
+        <GlutScene surplusTonnes={Math.round(o.kgAtRisk / 1000)} />
         <CrashScene />
-        <RerouteScene />
+        <RerouteScene rupees={o.potentialRupeesSaved} kg={o.routableKg} unitCount={o.unitsAvailable} />
         <CallScene />
         <SunriseScene />
 
@@ -36,10 +40,9 @@ export default function Page() {
               </Reveal>
               <Reveal delay={90}>
                 <p className="muted" style={{ fontSize: 18, lineHeight: 1.6, marginTop: 18, maxWidth: 720 }}>
-                  When a harvest floods the market the price collapses, the farmer dumps the crop, and you still
-                  pay full price at the shop. Kisan Setu predicts that crash from public mandi data, routes the
-                  surplus to a nearby processing unit that can use it, and calls the farmer — in their own
-                  language — with a fair price to accept.
+                  When a harvest floods the market the price collapses and the crop that does not sell becomes food waste.
+                  Kisan Setu scores that crash from public mandi signals, routes the surplus to a nearby processing
+                  unit that can turn it into something that keeps, and calls the farmer in their own language with a price to accept.
                 </p>
               </Reveal>
             </section>
@@ -71,13 +74,18 @@ export default function Page() {
             <section className="pb-16">
               <Reveal>
                 <div className="card p-7">
-                  <div className="eyebrow">The impact, on real-shaped data for {o.district}</div>
+                  <div className="eyebrow">Food waste this demo can route, {o.district}</div>
                   <div className="grid gap-6 mt-4" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
-                    <Stat big={inr(o.potentialRupeesSaved)} small="rescuable this week instead of dumping" />
-                    <Stat big={num(Math.round(o.kgAtRisk / 1000)) + " t"} small="surplus about to flood one district" />
-                    <Stat big={String(o.unitsAvailable)} small="idle processing units nearby" />
+                    <Stat big={inr(o.potentialRupeesSaved)} small="farmer income if surplus is sold to units, not dumped" />
+                    <Stat big={num(Math.round(o.kgAtRisk / 1000)) + " t"} small="surplus that becomes waste if left unsold" />
+                    <Stat big={o.wasteReductionPct + "%"} small="of that surplus the units can take this week" />
+                    <Stat big={String(o.unitsAvailable)} small="processing units in the catalog" />
                     <Stat big={num(o.farmersReached)} small="farmers reachable by one phone call" />
                   </div>
+                  <p className="faint" style={{ fontSize: 13, marginTop: 14, lineHeight: 1.5, maxWidth: 760 }}>
+                    Computed from this demo&apos;s Kolar arrivals series and the weekly capacity of the listed units
+                    ({num(o.routableKg)} kg routable). Illustrative of the routing rule. Not a field measurement and not a national estimate.
+                  </p>
                 </div>
               </Reveal>
             </section>

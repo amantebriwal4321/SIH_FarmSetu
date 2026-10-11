@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { speak, pauseSpeak, resumeSpeak, stopSpeak, canSpeak, hasVoiceFor } from "@/lib/speak";
+import { speak, pauseSpeak, resumeSpeak, stopSpeak, canSpeak, hasVoiceFor, playAudioBlob } from "@/lib/speak";
 
-// One button that plays the spoken alert and lets the presenter PAUSE it mid-message
-// (so they can say "and it's also in Hindi and Kannada"), then resume or replay.
-// Switching language resets it to idle so each language is played deliberately.
-// If the device has NO voice for this language, it never fakes it in English — it
-// shows a clear note instead (Kannada, for example, needs an Android phone).
+// Plays the spoken alert. Hindi tries Amazon Polly first (POST /api/speak).
+// If Polly is not configured, or the call fails, it uses the browser voice.
+// Kannada and English stay on the browser voice. A missing voice is never
+// faked in the wrong language.
 export default function SpeakButton({
   text,
   voice,
@@ -24,45 +23,84 @@ export default function SpeakButton({
   style?: React.CSSProperties;
 }) {
   const [state, setState] = useState<"idle" | "playing" | "paused">("idle");
-  const [available, setAvailable] = useState(true); // optimistic until voices load
+  const [available, setAvailable] = useState(true);
+  const [pollyVoice, setPollyVoice] = useState<string | null>(null);
   const first = useRef(true);
+  const gen = useRef(0);
   const key = `${voice}|${text}`;
+  const hindi = voice.toLowerCase().startsWith("hi");
 
-  // voice availability for this language (recheck when the voice list loads)
   useEffect(() => {
-    const check = () => setAvailable(hasVoiceFor(voice));
+    const check = () => setAvailable(hindi || hasVoiceFor(voice));
     check();
     if (!canSpeak()) return;
     window.speechSynthesis.addEventListener("voiceschanged", check);
     return () => window.speechSynthesis.removeEventListener("voiceschanged", check);
-  }, [voice]);
+  }, [voice, hindi]);
 
-  // play once on mount if asked and a voice exists
   useEffect(() => {
-    if (autoPlay && canSpeak() && hasVoiceFor(voice)) start();
-    return () => stopSpeak();
+    if (autoPlay) void start();
+    return () => {
+      gen.current += 1;
+      stopSpeak();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // language / text changed → stop and reset so the new one is played on purpose
   useEffect(() => {
     if (first.current) { first.current = false; return; }
+    gen.current += 1;
     stopSpeak();
     setState("idle");
+    setPollyVoice(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  function start() {
-    speak(text, voice, () => setState("idle"));
+  async function start() {
+    const my = ++gen.current;
+    setPollyVoice(null);
+    if (hindi) {
+      try {
+        const res = await fetch("/api/speak", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ text, lang: "hi-IN" }),
+        });
+        if (my !== gen.current) return;
+        const type = res.headers.get("content-type") || "";
+        if (res.ok && type.includes("audio")) {
+          const blob = await res.blob();
+          if (my !== gen.current) return;
+          await playAudioBlob(blob, () => {
+            if (my === gen.current) setState("idle");
+          });
+          if (my !== gen.current) return;
+          setPollyVoice(res.headers.get("x-polly-voice") || "Polly");
+          setState("playing");
+          return;
+        }
+      } catch {
+        if (my !== gen.current) return;
+      }
+    }
+    if (!canSpeak() || !hasVoiceFor(voice)) {
+      setAvailable(false);
+      setState("idle");
+      return;
+    }
+    speak(text, voice, () => {
+      if (my === gen.current) setState("idle");
+    });
     setState("playing");
   }
+
   function toggle() {
-    if (state === "idle") start();
+    if (state === "idle") void start();
     else if (state === "playing") { pauseSpeak(); setState("paused"); }
     else { resumeSpeak(); setState("playing"); }
   }
 
-  if (!canSpeak()) return null;
+  if (!canSpeak() && !hindi) return null;
 
   if (!available) {
     return (
@@ -74,8 +112,15 @@ export default function SpeakButton({
 
   const label = state === "playing" ? labels.pause : state === "paused" ? labels.resume : labels.play;
   return (
-    <button className={className} style={style} onClick={toggle} aria-live="polite">
-      {label}
-    </button>
+    <div style={{ alignSelf: "flex-start" }}>
+      <button className={className} style={style} onClick={toggle} aria-live="polite">
+        {label}
+      </button>
+      {pollyVoice && (
+        <div className="faint" style={{ fontSize: 11, marginTop: 4 }}>
+          Amazon Polly · {pollyVoice} · hi-IN
+        </div>
+      )}
+    </div>
   );
 }
