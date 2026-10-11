@@ -10,7 +10,7 @@ import RiskBadge from "@/components/RiskBadge";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import { stopSpeak } from "@/lib/speak";
 import { STR, loadLang, saveLang, type Lang } from "@/lib/i18n";
-import { num, alertTargets, UNITS, type CropDetail, type Match, type MatchTotals, type AlertBundle } from "@/lib/engine";
+import { num, alertTargets, UNITS, type CropDetail, type Match, type MatchTotals, type AlertBundle, type Unit } from "@/lib/engine";
 
 const STEP_MS = 4200;
 
@@ -23,9 +23,9 @@ const STEPS = [
 ];
 
 export default function FlowClient({
-  detail, matches, totals, alert,
+  detail, matches, totals, alert, units = UNITS,
 }: {
-  detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle;
+  detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle; units?: Unit[];
 }) {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(true);
@@ -91,9 +91,12 @@ export default function FlowClient({
           <PriceDrop were={detail.series[0].price} now={detail.latestPrice} risk={detail.risk} />
           <div className="mt-4" style={{ opacity: routed ? 1 : 0.35, transition: "opacity .5s" }}>
             <ImpactMeter active={routed} rupees={totals.rupeesSaved} kg={totals.kgRescued} units={totals.unitsEngaged} />
+            <p className="faint" style={{ fontSize: 11.5, marginTop: 8, lineHeight: 1.4 }}>
+              Kg kept out of waste is the share of this crop&apos;s surplus the units can take this week, from the demo series.
+            </p>
           </div>
           <div className="mt-4">
-            <SvgMap district={{ lat: detail.districtLat, lng: detail.districtLng, name: detail.district }} units={UNITS} matched={matches} routed={routed} />
+            <SvgMap district={{ lat: detail.districtLat, lng: detail.districtLng, name: detail.district }} units={units} matched={matches} routed={routed} />
           </div>
           {step >= 4 && (
             <div className="panel p-3 mt-4" style={{ borderColor: "var(--brand)", color: "var(--brand-deep)", fontSize: 13, fontWeight: 600 }}>

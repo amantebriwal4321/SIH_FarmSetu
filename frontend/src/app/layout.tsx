@@ -9,9 +9,9 @@ const kannada = Noto_Sans_Kannada({ subsets: ["kannada"], weight: ["400", "500",
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "Kisan Setu — stop the crop from being dumped",
+  title: "Kisan Setu: route surplus before it becomes waste",
   description:
-    "Spot a crop price crash before it happens and route the surplus to nearby processing units — so a crop that would rot becomes a product that lasts.",
+    "Score a crop crash, route the surplus to nearby processing units, and call the farmer. Food that would rot stays in the value chain.",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg", apple: "/icon.svg" },
   appleWebApp: { capable: true, title: "Krishi Saathi", statusBarStyle: "black-translucent" },

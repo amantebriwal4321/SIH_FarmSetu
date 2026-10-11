@@ -40,8 +40,8 @@ export default function ImpactMeter({
   const u = useCountUp(units, active);
   const items = [
     { label: "Rupees saved vs dumping", value: "₹" + Math.round(r).toLocaleString("en-IN"), accent: "var(--brand-deep)" },
-    { label: "Kg rescued from waste", value: Math.round(k).toLocaleString("en-IN"), accent: "var(--ink)" },
-    { label: "Processing units engaged", value: String(Math.round(u)), accent: "var(--ink)" },
+    { label: "Kg kept out of waste", value: Math.round(k).toLocaleString("en-IN"), accent: "var(--ink)" },
+    { label: "Units taking the surplus", value: String(Math.round(u)), accent: "var(--ink)" },
   ];
   return (
     <div className="grid grid-cols-3 gap-3">

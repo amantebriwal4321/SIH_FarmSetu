@@ -1,5 +1,5 @@
 import FarmerApp from "./FarmerApp";
-import { alertText } from "@/lib/engine";
+import { loadEngine } from "@/lib/aws/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,8 @@ export default async function Page({
   const sp = await searchParams;
   const cropParam = typeof sp.crop === "string" ? sp.crop : undefined;
   const auto = sp.auto === "1";
-  const incoming = cropParam ? alertText(cropParam) : null;
-  const sample = alertText("tomato")!;
+  const { engine } = await loadEngine();
+  const incoming = cropParam ? engine.alertText(cropParam) : null;
+  const sample = engine.alertText("tomato")!;
   return <FarmerApp sample={sample} incoming={incoming} auto={auto} />;
 }

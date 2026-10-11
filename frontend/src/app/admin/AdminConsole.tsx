@@ -25,17 +25,21 @@ import {
   type AlertBundle,
 } from "@/lib/engine";
 import Link from "next/link";
+import LambdaRisk from "@/components/LambdaRisk";
+import ExplainRisk from "@/components/ExplainRisk";
 
 type Detail = { detail: CropDetail; matches: Match[]; totals: MatchTotals; alert: AlertBundle };
 type Overview = {
   district: string; cropsTracked: number; cropsAtRisk: number; kgAtRisk: number;
+  routableKg: number; wasteReductionPct: number;
   potentialRupeesSaved: number; unitsAvailable: number; buyers: number; farmersReached: number;
 };
 
 export default function AdminConsole({
-  overview, crops, units, details, qrBase, isLan, live,
+  overview, crops, units, details, qrBase, isLan, live, dataSource = "static",
 }: {
   overview: Overview; crops: CropSummary[]; units: Unit[]; details: Record<string, Detail>; qrBase: string; isLan: boolean; live: LivePricesData;
+  dataSource?: "dynamodb" | "static";
 }) {
   const [selected, setSelected] = useState(crops[0]?.slug);
   const [routed, setRouted] = useState(false);
@@ -99,11 +103,16 @@ export default function AdminConsole({
     <DashShell title="Overview" subtitle="Spot a crop about to crash, then route the surplus before it’s dumped." active="overview">
       {/* KPIs */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard filled label="Rupees rescuable" value={inr(overview.potentialRupeesSaved)} caption="this week, vs dumping" />
+        <KpiCard filled label="Rupees if sold, not dumped" value={inr(overview.potentialRupeesSaved)} caption="computed from offer minus crash price" />
         <KpiCard label="Crops at risk" value={String(overview.cropsAtRisk)} caption={`of ${overview.cropsTracked} tracked`} />
-        <KpiCard label="Surplus at risk" value={num(Math.round(overview.kgAtRisk / 1000)) + " t"} caption="about to flood the mandi" />
+        <KpiCard label="Food waste at risk" value={num(Math.round(overview.kgAtRisk / 1000)) + " t"} caption="surplus above a normal week" />
         <KpiCard label="Farmers reachable" value={num(overview.farmersReached)} caption="AgriStack registry · Kolar" />
       </section>
+      <p className="faint" style={{ fontSize: 12.5, marginTop: 10, lineHeight: 1.45 }}>
+        Waste figures are computed from this demo&apos;s arrivals series and the weekly capacity of the processing units. Not a field survey.
+        Units can take {overview.wasteReductionPct}% of the WATCH and HIGH surplus this week ({num(overview.routableKg)} kg).
+        Catalog: {dataSource === "dynamodb" ? "Amazon DynamoDB" : "local seed. Set DYNAMODB_TABLE_NAME to read DynamoDB."}
+      </p>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
         {/* selected crop */}
@@ -132,6 +141,25 @@ export default function AdminConsole({
             </div>
 
             <PriceDrop were={d.detail.series[0].price} now={d.detail.latestPrice} risk={d.detail.risk} />
+            <LambdaRisk
+              rows={d.detail.series.map((s) => ({
+                date: s.date,
+                month: Number(s.date.slice(5, 7)),
+                price: s.price,
+                arrivals: s.arrivals,
+              }))}
+              harvestMonths={d.detail.harvestMonths}
+              localScore={d.detail.risk}
+              localLabel={d.detail.label}
+              signals={d.detail.signals}
+            />
+            <ExplainRisk
+              name={d.detail.name}
+              score={d.detail.risk}
+              label={d.detail.label}
+              surplusTonnes={d.detail.surplusTonnes}
+              signals={d.detail.signals}
+            />
 
             {!routed ? (
               <p style={{ fontSize: 15.5, marginTop: 18, lineHeight: 1.6 }}>
@@ -141,9 +169,9 @@ export default function AdminConsole({
                   </>
                 ) : (
                   <>
-                    <b>{num(d.detail.surplusTonnes)} t</b> of {d.detail.name.toLowerCase()} is about to be dumped.
-                    Routing it now saves about <b style={{ color: "var(--brand-deep)" }}>{inr(d.totals.rupeesSaved)}</b> and
-                    targets <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages} via AgriStack crop-sown records.
+                    <b>{num(d.detail.surplusTonnes)} t</b> of {d.detail.name.toLowerCase()} is above a normal week of arrivals. Left unsold, that surplus is food waste.
+                    Nearby units can take <b>{num(d.totals.kgRescued)} kg</b> this week, about <b style={{ color: "var(--brand-deep)" }}>{inr(d.totals.rupeesSaved)}</b> more than the crash price for the farmer.
+                    The alert goes to <b>{num(farmers)} {d.detail.name.toLowerCase()} farmers</b> across {topVillages}.
                   </>
                 )}
               </p>
@@ -251,8 +279,8 @@ export default function AdminConsole({
             <div className="card p-6">
               <div className="grid grid-cols-3 gap-3 mb-5">
                 <Big label="Rupees saved" value={inr(d.totals.rupeesSaved)} accent="var(--brand-deep)" />
-                <Big label="Kg rescued" value={num(d.totals.kgRescued)} />
-                <Big label="Units that took it" value={String(d.totals.unitsEngaged)} />
+                <Big label="Kg kept out of waste" value={num(d.totals.kgRescued)} />
+                <Big label="Units taking surplus" value={String(d.totals.unitsEngaged)} />
               </div>
               <div className="mb-5">
                 <ValueChain crash={d.totals.crashPrice} offer={d.totals.offerPrice} productName={d.alert.productName} productPrice={d.alert.productPrice} cropSlug={d.alert.cropSlug} lang="en" />
